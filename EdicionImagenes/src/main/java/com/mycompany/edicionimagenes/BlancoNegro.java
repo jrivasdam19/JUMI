@@ -7,6 +7,8 @@ package com.mycompany.edicionimagenes;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
 import java.io.*;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -35,9 +37,11 @@ class VentanaImagen extends JFrame {
 }
 
 class LaminaConImagen extends JPanel {
-    private BufferedImage imagenColor;
-    private BufferedImage imagenBN;
-    private BufferedImage imagenPixeles;
+    private static BufferedImage imagenColor;
+    private static int[] vectorImagen;
+    private static int[] vectorBN;
+    private static BufferedImage imagenBN;
+    private static byte[] bytes;
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -48,12 +52,66 @@ class LaminaConImagen extends JPanel {
         } catch (IOException e) {
             System.out.println("La imagen no se encuentra.");
         }
-        convertirBlancoNegro(imagenColor, imagenBN);
+        Raster raster = imagenColor.getRaster();
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+        bytes = data.getData();
+        vectorImagen = new int[bytes.length];
+        vectorBN = new int[vectorImagen.length];
+        for (int i = 0; i < bytes.length; i++) {
+            vectorImagen[i] = Byte.toUnsignedInt(bytes[i]);
+        }
         g.drawImage(imagenColor, 5, 5, null);
-        g.drawImage(imagenBN, 5 + imagenColor.getWidth(), 5, null);
+        //aplicarGrises();
+        aplicarBrillo();
+        g.drawImage(imagenColor, 5 + imagenColor.getWidth(), 5, null);
     }
 
-    public void convertirBlancoNegro(BufferedImage imagenColor, BufferedImage imagenBN) {
+    public static void aplicarGrises() {
+        for (int i = 0; i < vectorImagen.length; i+=3) {
+            int a1,a2,a3;
+            a1=vectorImagen[i];
+            a2=vectorImagen[i+1];
+            a3=vectorImagen[i+2];
+            int rgb=(a1+a2+a3)/3;
+            for (int j = i; j < i+3; j++) {
+                bytes[j]=(byte)rgb;
+            }
+        }
+    }
+
+    public static void aplicarBrillo(){
+        for (int i = 0; i < vectorImagen.length; i+=3) {
+            int a1, a2, a3;
+            a1=vectorImagen[i]+30;
+            a1=comprobar255(a1);
+            a2=vectorImagen[i+1]+30;
+            a2=comprobar255(a2);
+            a3=vectorImagen[i+2]+30;
+            a3=comprobar255(a3);
+            bytes[i]=(byte)a1;
+            bytes[i+1]=(byte)a2;
+            bytes[i+2]=(byte)a3;
+        }
+    }
+
+    public static int comprobar255(int x){
+        if (x>255){
+            x=255;
+        }
+        return x;
+    }
+
+    /*public static void asignarGrisesImagen() {
+        int x = 0;
+        for (int i = 0; i < imagenColor.getHeight(); i++) {
+            for (int j = 0; j < imagenColor.getWidth(); j++) {
+                imagenColor.setRGB(j, i, vectorBN[x]);
+                x++;
+            }
+        }
+    }*/
+
+    /*public void convertirBlancoNegro(BufferedImage imagenColor, BufferedImage imagenBN) {
         for (int i = 0; i < imagenColor.getHeight(); i++) {
             for (int j = 0; j < imagenColor.getWidth(); j++) {
                 Color color = new Color(imagenColor.getRGB(i, j));
@@ -66,6 +124,6 @@ class LaminaConImagen extends JPanel {
                 imagenBN.setRGB(i, j, gris.getRGB());
             }
         }
-    }
+    }*/
 }
 
