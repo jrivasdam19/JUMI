@@ -64,7 +64,6 @@ public class Profunditat {
                         matriz[j][k][l] = vector[i];
                         i++;
                     }
-
                 }
             }
         }

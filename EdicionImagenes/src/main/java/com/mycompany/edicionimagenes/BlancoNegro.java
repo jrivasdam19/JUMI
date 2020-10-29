@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.imageio.*;
 
@@ -18,6 +18,7 @@ import javax.imageio.*;
  * @author Jose
  */
 public class BlancoNegro {
+
 
     public static void main(String[] args) {
         VentanaImagen miVentana = new VentanaImagen();
@@ -30,7 +31,8 @@ class VentanaImagen extends JFrame {
 
     public VentanaImagen() {
         setTitle("Ventana Color - Blanco y negro");
-        setBounds(50, 50, 800, 500);
+        setBounds(0, 0, 1000, 1000);
+        //setExtendedState(Frame.MAXIMIZED_BOTH);//ejecutar la ventana con el máximo tamaño
         LaminaConImagen miLamina = new LaminaConImagen();
         add(miLamina);
     }
@@ -38,92 +40,219 @@ class VentanaImagen extends JFrame {
 
 class LaminaConImagen extends JPanel {
     private static BufferedImage imagenColor;
+    private static byte[] arrayBytes;
     private static int[] vectorImagen;
-    private static int[] vectorBN;
-    private static BufferedImage imagenBN;
+    private static int[] vectorCopia;
+    private static int[][][] matriz;
     private static byte[] bytes;
+    private static final int[][] kernel = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
+    private static int numeroK;
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        File miImagen = new File("C:/Users/Jose/Desktop/LOCAL JUMI/EdicionImagenes/src/graficos/pera.jpg");
+        leerImagen();
+        obtenerInformacionImagen();
+        numeroK();
+        boolean alpha = imagenColor.isAlphaPremultiplied();//Comprobamos si la imagen tiene alfa.
+        System.out.println("ALPHA: " + alpha);
+        g.drawImage(imagenColor, 5, 5, null);
+        if (!alpha) {
+            //aplicarGrises();
+            //aplicarBrillo();
+            //aplicarBrilloAzules();
+            //separarRGB();
+            seleccionarPixel();
+            g.drawImage(crearImagen(), imagenColor.getHeight(), 5, null);
+            //restablecerPuntero();
+            //aplicarBrilloVerdes();
+            //g.drawImage(imagenColor, 5, imagenColor.getWidth(), null);
+            //restablecerPuntero();
+            //aplicarBrilloRojos();
+            //.drawImage(imagenColor, imagenColor.getHeight(), imagenColor.getWidth(), null);
+            //restablecerPuntero();
+        } else {
+            System.out.println("Tiene ALPHA");
+        }
+    }
+
+    public static void leerImagen() {
+        File miImagen = new File("C:/Users/Jose/Desktop/LOCAL JUMI/EdicionImagenes/src/graficos/coche.jpeg");
         try {
             imagenColor = ImageIO.read(miImagen);
-            imagenBN = new BufferedImage(imagenColor.getHeight(), imagenColor.getWidth(), BufferedImage.TYPE_INT_ARGB);
         } catch (IOException e) {
             System.out.println("La imagen no se encuentra.");
         }
-        Raster raster = imagenColor.getRaster();
-        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-        bytes = data.getData();
-        vectorImagen = new int[bytes.length];
-        vectorBN = new int[vectorImagen.length];
-        for (int i = 0; i < bytes.length; i++) {
-            vectorImagen[i] = Byte.toUnsignedInt(bytes[i]);
-        }
-        g.drawImage(imagenColor, 5, 5, null);
-        //aplicarGrises();
-        aplicarBrillo();
-        g.drawImage(imagenColor, 5 + imagenColor.getWidth(), 5, null);
     }
 
-    public static void aplicarGrises() {
-        for (int i = 0; i < vectorImagen.length; i+=3) {
-            int a1,a2,a3;
-            a1=vectorImagen[i];
-            a2=vectorImagen[i+1];
-            a3=vectorImagen[i+2];
-            int rgb=(a1+a2+a3)/3;
-            for (int j = i; j < i+3; j++) {
-                bytes[j]=(byte)rgb;
+    public static void seleccionarPixel() {
+        for (int i = 1; i < imagenColor.getHeight() - 1; i++) {
+            for (int j = 1; j < imagenColor.getWidth() - 1; j++) {
+                for (int k = 0; k < 3; k++) {
+                    convolucionPixelVector(i, j, k);
+                }
             }
         }
     }
 
-    public static void aplicarBrillo(){
-        for (int i = 0; i < vectorImagen.length; i+=3) {
-            int a1, a2, a3;
-            a1=vectorImagen[i]+30;
-            a1=comprobar255(a1);
-            a2=vectorImagen[i+1]+30;
-            a2=comprobar255(a2);
-            a3=vectorImagen[i+2]+30;
-            a3=comprobar255(a3);
-            bytes[i]=(byte)a1;
-            bytes[i+1]=(byte)a2;
-            bytes[i+2]=(byte)a3;
+    public static void convolucionPixelVector(int i, int j, int k) {
+        int posicionVectorFinal = (3 * imagenColor.getWidth() * i) + (3 * j) + k;
+        for (int l = 0; l < kernel.length; l++) {
+            for (int m = 0; m < kernel[l].length; m++) {
+                int posicionVectorOrigen = (3
+                        * imagenColor.getWidth() * (i - 1 + l)) + (3 * (j - 1 + m)) + k;
+                vectorCopia[posicionVectorFinal] += vectorImagen[posicionVectorOrigen] * kernel[l][m];
+            }
+        }
+        vectorCopia[posicionVectorFinal] /= numeroK;
+        vectorCopia[posicionVectorFinal] = comprobar255(vectorCopia[posicionVectorFinal]);
+    }
+    public static BufferedImage crearImagen(){
+        BufferedImage imagen = new BufferedImage(imagenColor.getHeight(),imagenColor.getWidth(),BufferedImage.TYPE_3BYTE_BGR);
+        Raster raster = imagen.getRaster();//Obtenemos la información de la imagen para trabajar con el array de bits
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+        byte newBytes[] = data.getData();
+        for (int i = 0; i < newBytes.length; i++) {
+            newBytes[i]=(byte)vectorCopia[i];
+        }
+        return imagen;
+    }
+
+    public static void separarRGB() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int blue, green, red;
+            System.out.println(vectorImagen[i] + " " + vectorImagen[i + 1] + " " + vectorImagen[i + 2]);
+            blue = comprobar255(aplicarKernel(vectorImagen[i]));
+            green = comprobar255(aplicarKernel(vectorImagen[i + 1]));
+            red = comprobar255(aplicarKernel(vectorImagen[i + 2]));
+            bytes[i] = (byte) blue;
+            bytes[i + 1] = (byte) green;
+            bytes[i + 2] = (byte) red;
         }
     }
 
-    public static int comprobar255(int x){
-        if (x>255){
-            x=255;
+    public static int aplicarKernel(int valor) {
+        int resultado = 0;
+        for (int i = 0; i < kernel.length; i++) {
+            for (int j = 0; j < kernel[i].length; j++) {
+                resultado += valor * kernel[i][j];
+            }
+        }
+        resultado /= numeroK;
+        //resultado = comprobarValorNulo(resultado);
+        return resultado;
+    }
+
+    public static int comprobarValorNulo(int valor) {
+        if (valor == 0) {
+            valor = 1;
+        }
+        return valor;
+    }
+
+    public static void obtenerInformacionImagen() {
+        Raster raster = imagenColor.getRaster();//Obtenemos la información de la imagen para trabajar con el array de bits
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+        bytes = data.getData();
+        arrayBytes = Arrays.copyOf(bytes, bytes.length);
+        vectorImagen = new int[bytes.length];
+        vectorCopia = new int[vectorImagen.length];
+        //Pasamos los bytes a int para poder trabajar con ellos.
+        for (int i = 0; i < bytes.length; i++) {
+            vectorImagen[i] = Byte.toUnsignedInt(bytes[i]);
+        }
+    }
+
+    public static void restablecerPuntero() {
+        for (int i = 0; i < arrayBytes.length; i++) {
+            bytes[i] = arrayBytes[i];
+        }
+    }
+
+    public static void aplicarGrises() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int a1, a2, a3;
+            a1 = vectorImagen[i];
+            a2 = vectorImagen[i + 1];
+            a3 = vectorImagen[i + 2];
+            int rgb = (a1 + a2 + a3) / 3;
+            for (int j = i; j < i + 3; j++) {
+                bytes[j] = (byte) rgb;
+            }
+        }
+    }
+
+    public static void aplicarBrillo() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int a1, a2, a3;
+            a1 = vectorImagen[i] + 30;
+            a1 = comprobar255(a1);
+            a2 = vectorImagen[i + 1] + 30;
+            a2 = comprobar255(a2);
+            a3 = vectorImagen[i + 2] + 30;
+            a3 = comprobar255(a3);
+            bytes[i] = (byte) a1;
+            bytes[i + 1] = (byte) a2;
+            bytes[i + 2] = (byte) a3;
+        }
+    }
+
+    public static void aplicarBrilloAzules() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int blue;
+            blue = vectorImagen[i] + 100;
+            blue = comprobar255(blue);
+            bytes[i] = (byte) blue;
+        }
+    }
+
+    public static void aplicarBrilloVerdes() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int green;
+            green = vectorImagen[i + 1] + 100;
+            green = comprobar255(green);
+            bytes[i + 1] = (byte) green;
+        }
+    }
+
+    public static void aplicarBrilloRojos() {
+        for (int i = 0; i < vectorImagen.length; i += 3) {
+            int red;
+            red = vectorImagen[i + 2] + 100;
+            red = comprobar255(red);
+            bytes[i + 2] = (byte) red;
+        }
+    }
+
+    public static int comprobar255(int x) {
+        if (x > 255) {
+            x = 255;
         }
         return x;
     }
 
-    /*public static void asignarGrisesImagen() {
-        int x = 0;
-        for (int i = 0; i < imagenColor.getHeight(); i++) {
-            for (int j = 0; j < imagenColor.getWidth(); j++) {
-                imagenColor.setRGB(j, i, vectorBN[x]);
-                x++;
+    public static void numeroK() {
+        for (int i = 0; i < kernel.length; i++) {
+            for (int j = 0; j < kernel[i].length; j++) {
+                numeroK += kernel[i][j];
             }
         }
-    }*/
+        if (numeroK == 0) {
+            numeroK = 1;
+        }
+    }
 
-    /*public void convertirBlancoNegro(BufferedImage imagenColor, BufferedImage imagenBN) {
-        for (int i = 0; i < imagenColor.getHeight(); i++) {
-            for (int j = 0; j < imagenColor.getWidth(); j++) {
-                Color color = new Color(imagenColor.getRGB(i, j));
-                int red = color.getRed();
-                int green = color.getGreen();
-                int blue = color.getBlue();
-                int alpha = color.getAlpha();
-                int gray = (red + green + blue) / 3;
-                Color gris = new Color(gray, gray, gray, alpha);
-                imagenBN.setRGB(i, j, gris.getRGB());
+    public static void construirVector_matriz(int filas, int columnas, int profundidad) {
+        matriz = new int[filas][columnas][profundidad];
+        for (int i = 0; i < vectorImagen.length; i++) {
+            for (int j = 0; j < matriz.length; j++) {
+                for (int k = 0; k < matriz[j].length; k++) {
+                    for (int l = 0; l < matriz[j][k].length; l++) {
+                        matriz[j][k][l] = vectorImagen[i];
+                        i++;
+                    }
+                }
             }
         }
-    }*/
+    }
 }
 
