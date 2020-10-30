@@ -40,10 +40,8 @@ class VentanaImagen extends JFrame {
 
 class LaminaConImagen extends JPanel {
     private static BufferedImage imagenColor;
-    private static byte[] arrayBytes;
     private static int[] vectorImagen;
     private static int[] vectorCopia;
-    private static int[][][] matriz;
     private static byte[] bytes;
     private static final int[][] kernel = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
     private static int numeroK;
@@ -57,19 +55,8 @@ class LaminaConImagen extends JPanel {
         System.out.println("ALPHA: " + alpha);
         g.drawImage(imagenColor, 5, 5, null);
         if (!alpha) {
-            //aplicarGrises();
-            //aplicarBrillo();
-            //aplicarBrilloAzules();
-            //separarRGB();
             seleccionarPixel();
-            g.drawImage(crearImagen(), imagenColor.getHeight(), 5, null);
-            //restablecerPuntero();
-            //aplicarBrilloVerdes();
-            //g.drawImage(imagenColor, 5, imagenColor.getWidth(), null);
-            //restablecerPuntero();
-            //aplicarBrilloRojos();
-            //.drawImage(imagenColor, imagenColor.getHeight(), imagenColor.getWidth(), null);
-            //restablecerPuntero();
+            g.drawImage(crearImagen(), imagenColor.getWidth() + 10, 5, null);
         } else {
             System.out.println("Tiene ALPHA");
         }
@@ -98,73 +85,34 @@ class LaminaConImagen extends JPanel {
         int posicionVectorFinal = (3 * imagenColor.getWidth() * i) + (3 * j) + k;
         for (int l = 0; l < kernel.length; l++) {
             for (int m = 0; m < kernel[l].length; m++) {
-                int posicionVectorOrigen = (3
-                        * imagenColor.getWidth() * (i - 1 + l)) + (3 * (j - 1 + m)) + k;
+                int posicionVectorOrigen = (3 * imagenColor.getWidth() * (i - 1 + l)) + (3 * (j - 1 + m)) + k;
                 vectorCopia[posicionVectorFinal] += vectorImagen[posicionVectorOrigen] * kernel[l][m];
             }
         }
         vectorCopia[posicionVectorFinal] /= numeroK;
         vectorCopia[posicionVectorFinal] = comprobar255(vectorCopia[posicionVectorFinal]);
     }
-    public static BufferedImage crearImagen(){
-        BufferedImage imagen = new BufferedImage(imagenColor.getHeight(),imagenColor.getWidth(),BufferedImage.TYPE_3BYTE_BGR);
+
+    public static BufferedImage crearImagen() {
+        BufferedImage imagen = new BufferedImage(imagenColor.getWidth(), imagenColor.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         Raster raster = imagen.getRaster();//Obtenemos la información de la imagen para trabajar con el array de bits
         DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
         byte newBytes[] = data.getData();
         for (int i = 0; i < newBytes.length; i++) {
-            newBytes[i]=(byte)vectorCopia[i];
+            newBytes[i] = (byte) vectorCopia[i];
         }
         return imagen;
-    }
-
-    public static void separarRGB() {
-        for (int i = 0; i < vectorImagen.length; i += 3) {
-            int blue, green, red;
-            System.out.println(vectorImagen[i] + " " + vectorImagen[i + 1] + " " + vectorImagen[i + 2]);
-            blue = comprobar255(aplicarKernel(vectorImagen[i]));
-            green = comprobar255(aplicarKernel(vectorImagen[i + 1]));
-            red = comprobar255(aplicarKernel(vectorImagen[i + 2]));
-            bytes[i] = (byte) blue;
-            bytes[i + 1] = (byte) green;
-            bytes[i + 2] = (byte) red;
-        }
-    }
-
-    public static int aplicarKernel(int valor) {
-        int resultado = 0;
-        for (int i = 0; i < kernel.length; i++) {
-            for (int j = 0; j < kernel[i].length; j++) {
-                resultado += valor * kernel[i][j];
-            }
-        }
-        resultado /= numeroK;
-        //resultado = comprobarValorNulo(resultado);
-        return resultado;
-    }
-
-    public static int comprobarValorNulo(int valor) {
-        if (valor == 0) {
-            valor = 1;
-        }
-        return valor;
     }
 
     public static void obtenerInformacionImagen() {
         Raster raster = imagenColor.getRaster();//Obtenemos la información de la imagen para trabajar con el array de bits
         DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
         bytes = data.getData();
-        arrayBytes = Arrays.copyOf(bytes, bytes.length);
         vectorImagen = new int[bytes.length];
-        vectorCopia = new int[vectorImagen.length];
+        vectorCopia = new int[bytes.length];
         //Pasamos los bytes a int para poder trabajar con ellos.
         for (int i = 0; i < bytes.length; i++) {
             vectorImagen[i] = Byte.toUnsignedInt(bytes[i]);
-        }
-    }
-
-    public static void restablecerPuntero() {
-        for (int i = 0; i < arrayBytes.length; i++) {
-            bytes[i] = arrayBytes[i];
         }
     }
 
@@ -226,6 +174,8 @@ class LaminaConImagen extends JPanel {
     public static int comprobar255(int x) {
         if (x > 255) {
             x = 255;
+        } else if (x < 0) {
+            x = 0;
         }
         return x;
     }
@@ -238,20 +188,6 @@ class LaminaConImagen extends JPanel {
         }
         if (numeroK == 0) {
             numeroK = 1;
-        }
-    }
-
-    public static void construirVector_matriz(int filas, int columnas, int profundidad) {
-        matriz = new int[filas][columnas][profundidad];
-        for (int i = 0; i < vectorImagen.length; i++) {
-            for (int j = 0; j < matriz.length; j++) {
-                for (int k = 0; k < matriz[j].length; k++) {
-                    for (int l = 0; l < matriz[j][k].length; l++) {
-                        matriz[j][k][l] = vectorImagen[i];
-                        i++;
-                    }
-                }
-            }
         }
     }
 }
