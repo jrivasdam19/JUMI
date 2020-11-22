@@ -14,15 +14,21 @@ public class ControlPanel extends JPanel {
         button1 = new JButton("Button 1");
         c.gridx = 0;
         c.gridy = 0;
-        c.weightx=1;
-        c.weighty=1;
-        this.add(button1,c);
+        c.weightx = 1;
+        c.weighty = 1;
+        this.add(button1, c);
 
         button2 = new JButton("Button 2");
         c.gridx = 0;
         c.gridy = 2;
-        c.weightx=0;
-        c.weighty=0;
-        this.add(button2,c);
+        c.weightx = 0;
+        c.weighty = 0;
+        this.add(button2, c);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    private void createButtons() {
+
     }
 }
