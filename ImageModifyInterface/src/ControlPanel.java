@@ -23,7 +23,7 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
     private JSlider squareSize, bright, red, green, blue, focus;
 
     private boolean selectedZoneAll = true;
-    private  boolean updatedInfo = true;
+    private boolean updatedInfo = true;
 
     public ControlPanel(Viewer viewer) {
         this.setLayout(new GridBagLayout());
@@ -229,19 +229,28 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.add(this.fire, c);
     }
 
-    /*private void updateComponents(boolean term) {
-        if (!term) {
-            this.setJTableData(this.dataFromImage, Viewer.currentImage);
-            this.squareSize.setEnabled(true);
-            this.selectSquare.setEnabled(false);
-            this.selectAll.setEnabled(true);
-        } else {
-            this.setJTableData(this.dataFromImage, Viewer.getCurrentImage());
-            this.squareSize.setEnabled(false);
-            this.selectAll.setEnabled(false);
-            this.selectSquare.setEnabled(true);
+    private void applyPreviousChanges(MyImage image) {
+        if (image.getBrightSliderValue() != 0) {
+            this.viewer.modifyBrightness(image, image.getBrightSliderValue());
         }
-    }*/
+        if (image.getRedSliderValue() != 0) {
+            this.viewer.modifyRGBChannel(image, 2, image.getRedSliderValue());
+        }
+        if (image.getGreenSliderValue() != 0) {
+            this.viewer.modifyRGBChannel(image, 1, image.getGreenSliderValue());
+        }
+        if (image.getBlueSliderValue() != 0) {
+            this.viewer.modifyRGBChannel(image, 0, image.getBlueSliderValue());
+        }
+        if (image.getFocusSliderValue() != 0) {
+            if (image.getFocusSliderValue() > 0) {
+                this.viewer.modifyFocus(image, image.getFocusSliderValue(), this.viewer.focusKernel);
+            }
+            if (image.getFocusSliderValue() < 0) {
+                this.viewer.modifyFocus(image, image.getFocusSliderValue(), this.viewer.unFocusKernel);
+            }
+        }
+    }
 
     private String checkAlpha(BufferedImage image) {
         String alpha;
@@ -290,21 +299,21 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.squareSize.addChangeListener(this);
         this.squareSize.setEnabled(false);
         this.squareSize.setName("squareSize");
-        this.bright = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 0);
+        this.bright = new JSlider(SwingConstants.HORIZONTAL, -255, 255, 0);
         this.bright.addChangeListener(this);
         this.bright.setEnabled(false);
         this.bright.setName("bright");
-        this.red = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 0);
+        this.red = new JSlider(SwingConstants.HORIZONTAL, -255, 255, 0);
         this.red.addChangeListener(this);
         this.red.setBackground(Color.red);
         this.red.setEnabled(false);
         this.red.setName("red");
-        this.green = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 0);
+        this.green = new JSlider(SwingConstants.HORIZONTAL, -255, 255, 0);
         this.green.addChangeListener(this);
         this.green.setBackground(Color.green);
         this.green.setEnabled(false);
         this.green.setName("green");
-        this.blue = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 0);
+        this.blue = new JSlider(SwingConstants.HORIZONTAL, -255, 255, 0);
         this.blue.addChangeListener(this);
         this.blue.setBackground(Color.blue);
         this.blue.setEnabled(false);
@@ -322,80 +331,10 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.addComponentsToPanel();
     }
 
-    /*private boolean getSelectedZoneAll(){
-        boolean selectedAll;
-        if()
-    }*/
-
-    private void swapSelectedZone(boolean term) {
-        this.selectedZoneAll = term;
-    }
-
-    private void selectImage(MyImage image) {
-        this.setJTableData(this.dataFromImage, image);
-        this.updateSliders(image);
-        this.viewer.currentImage = image;
-    }
-
-    private void updateSliders(MyImage image) {
-        this.updatedInfo=false;
-        this.bright.setValue(image.getBrightSliderValue());
-        this.red.setValue(image.getRedSliderValue());
-        this.blue.setValue(image.getBlueSliderValue());
-        this.green.setValue(image.getGreenSliderValue());
-        this.focus.setValue(image.getFocusSliderValue());
-        this.squareSize.setValue(image.getSizeSliderValue());
-        this.updatedInfo=true;
-    }
-
-    private void updateImageData(MyImage image){
-        image.setBrightSliderValue(this.bright.getValue());
-        image.setRedSliderValue(this.red.getValue());
-        image.setBlueSliderValue(this.blue.getValue());
-        image.setGreenSliderValue(this.green.getValue());
-        image.setFocusSliderValue(this.focus.getValue());
-        image.setSizeSliderValue(this.squareSize.getValue());
-        image.pixels = ((DataBufferByte) image.getImage().getRaster().getDataBuffer()).getData();
-        image.rgbVector = new int[image.pixels.length];
-        for (int i = 0; i < image.pixels.length; i++) {
-            //image.rgbVector[i] = Byte.toUnsignedInt(image.pixels[i]);
-            image.rgbVector[i] = Byte.toUnsignedInt(this.viewer.originalImage.pixels[i]);
-        }
-    }
-    private void applyPreviousChanges(MyImage image){
-        if(image.getBrightSliderValue()!=0){
-            this.viewer.modifyBrightness(image,image.getBrightSliderValue());
-        }
-        if(image.getRedSliderValue()!=0){
-            this.viewer.modifyRGBChannel(image,2,image.getRedSliderValue());
-        }
-        if(image.getGreenSliderValue()!=0){
-            this.viewer.modifyRGBChannel(image,1,image.getGreenSliderValue());
-        }
-        if(image.getBlueSliderValue()!=0){
-            this.viewer.modifyRGBChannel(image,0,image.getBlueSliderValue());
-        }
-        if(image.getFocusSliderValue()!=0){
-            if(image.getFocusSliderValue()>0){
-                this.viewer.modifyFocus(image,image.getFocusSliderValue(),this.viewer.focusKernel);
-            }
-            if(image.getFocusSliderValue()<0){
-                this.viewer.modifyFocus(image,image.getFocusSliderValue(),this.viewer.unFocusKernel);
-            }
-        }
-    }
-
-    private void setJTableData(JTable table, MyImage image) {
-        table.setValueAt(this.firstRow[0], 0, 0);
-        table.setValueAt(this.firstRow[1], 0, 1);
-        table.setValueAt("Total KPixels", 1, 0);
-        table.setValueAt(image.pixels.length, 1, 1);
-        table.setValueAt("Total Width", 2, 0);
-        table.setValueAt(image.getWidth(), 2, 1);
-        table.setValueAt("Total Height", 3, 0);
-        table.setValueAt(image.getHeight(), 3, 1);
-        table.setValueAt("Alpha Channel", 4, 0);
-        table.setValueAt(checkAlpha(image.getImage()), 4, 1);
+    private void enableButtons(JButton b1, JButton b2, JButton b3) {
+        b1.setEnabled(true);
+        b2.setEnabled(true);
+        b3.setEnabled(true);
     }
 
     private void enableComponents() {
@@ -414,49 +353,53 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.focus.setEnabled(true);
     }
 
-    private void enableButtons(JButton b1, JButton b2, JButton b3) {
-        b1.setEnabled(true);
-        b2.setEnabled(true);
-        b3.setEnabled(true);
+    private void selectImage(MyImage image) {
+        this.setJTableData(this.dataFromImage, image);
+        this.updateSliders(image);
+        this.viewer.currentImage = image;
     }
 
-    private int getModifier(int sliderValue, int bright) {
-        bright = sliderValue - bright;
-        return bright;
+    private void setJTableData(JTable table, MyImage image) {
+        table.setValueAt(this.firstRow[0], 0, 0);
+        table.setValueAt(this.firstRow[1], 0, 1);
+        table.setValueAt("Total KPixels", 1, 0);
+        table.setValueAt(image.pixels.length, 1, 1);
+        table.setValueAt("Total Width", 2, 0);
+        table.setValueAt(image.getWidth(), 2, 1);
+        table.setValueAt("Total Height", 3, 0);
+        table.setValueAt(image.getHeight(), 3, 1);
+        table.setValueAt("Alpha Channel", 4, 0);
+        table.setValueAt(checkAlpha(image.getImage()), 4, 1);
     }
 
-    /*private BufferedImage returnCurrentImage() {
-        if (this.selectFirst.isEnabled()) {
-            return Viewer.getImage1();
-        }
-        if (this.selectSecond.isEnabled()) {
-            return Viewer.getRawImage2();
-        }
-        if (this.selectThird.isEnabled()) {
-            return Viewer.getRawImage3();
-        }
-        if (this.selectFourth.isEnabled()) {
-            return Viewer.getRawImage4();
-        }
-        return null;
+    private void swapSelectedZone(boolean term) {
+        this.selectedZoneAll = term;
     }
 
-    private BufferedImage returnCurrentSquare() {
-        if (this.selectFirst.isEnabled()) {
-            return Viewer.getSquare1();
+    private void updateImageData(MyImage image) {
+        image.setBrightSliderValue(this.bright.getValue());
+        image.setRedSliderValue(this.red.getValue());
+        image.setBlueSliderValue(this.blue.getValue());
+        image.setGreenSliderValue(this.green.getValue());
+        image.setFocusSliderValue(this.focus.getValue());
+        image.setSizeSliderValue(this.squareSize.getValue());
+        image.pixels = ((DataBufferByte) image.getImage().getRaster().getDataBuffer()).getData();
+        image.rgbVector = new int[image.pixels.length];
+        for (int i = 0; i < image.pixels.length; i++) {
+            image.rgbVector[i] = Byte.toUnsignedInt(this.viewer.originalImage.pixels[i]);
         }
-        if (this.selectSecond.isEnabled()) {
-            return Viewer.getSquare2();
-        }
-        if (this.selectThird.isEnabled()) {
-            return Viewer.getSquare3();
-        }
-        if (this.selectFourth.isEnabled()) {
-            return Viewer.getSquare4();
-        }
-        return null;
     }
-*/
+
+    private void updateSliders(MyImage image) {
+        this.updatedInfo = false;
+        this.bright.setValue(image.getBrightSliderValue());
+        this.red.setValue(image.getRedSliderValue());
+        this.blue.setValue(image.getBlueSliderValue());
+        this.green.setValue(image.getGreenSliderValue());
+        this.focus.setValue(image.getFocusSliderValue());
+        this.squareSize.setValue(image.getSizeSliderValue());
+        this.updatedInfo = true;
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -498,20 +441,29 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
                     this.selectImage(this.viewer.Image4);
                 }
             case "All":
-                /*this.selectImage(this.returnCurrentImage());
-                this.swapSelectedZone(true);
-                this.viewer.setPaintSquares(false);
-                this.updateComponents(true);*/
+                //Working
                 break;
             case "Resizeable Frame":
-                /*this.selectSquare(this.returnCurrentSquare());
-                this.swapSelectedZone(false);
-                this.viewer.setPaintSquares(true);
-                this.updateComponents(false);*/
+                //Working
                 break;
             case "Reset Brightness":
                 if (this.selectedZoneAll) {
-                    this.viewer.resetBrightness(this.viewer.currentImage);
+                    if(!this.selectFirst.isEnabled()){
+                        this.viewer.Image1=new MyImage(Viewer.imagePath);
+                        this.viewer.currentImage = this.viewer.Image1;
+                    }
+                    if(!this.selectSecond.isEnabled()){
+                        this.viewer.Image2=new MyImage(Viewer.imagePath);
+                        this.viewer.currentImage = this.viewer.Image2;
+                    }
+                    if(!this.selectThird.isEnabled()){
+                        this.viewer.Image3=new MyImage(Viewer.imagePath);
+                        this.viewer.currentImage = this.viewer.Image3;
+                    }
+                    if(!this.selectFourth.isEnabled()){
+                        this.viewer.Image4=new MyImage(Viewer.imagePath);
+                        this.viewer.currentImage = this.viewer.Image4;
+                    }
                     this.updateSliders(this.viewer.currentImage);
                 }
                 break;
@@ -536,40 +488,33 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         }
         switch (sliderName) {
             case "frameSize":
-                /*if (!this.selectedZoneAll) {
-                    this.viewer.modifySquareSize(jSlider.getValue());
-                }*/
+                //Working
                 break;
             case "bright":
                 if (this.selectedZoneAll && this.updatedInfo) {
                     this.applyPreviousChanges(this.viewer.currentImage);
-                    int bright = this.viewer.currentImage.getBrightSliderValue();
-                    bright = this.getModifier(jSlider.getValue(), bright);
-                    this.viewer.modifyBrightness(this.viewer.currentImage, bright);
+                    this.viewer.modifyBrightness(this.viewer.currentImage, jSlider.getValue());
                     this.updateImageData(this.viewer.currentImage);
                 }
                 break;
             case "red":
                 if (this.selectedZoneAll && this.updatedInfo) {
                     this.applyPreviousChanges(this.viewer.currentImage);
-                    int bright = this.getModifier(jSlider.getValue(), this.viewer.currentImage.getRedSliderValue());
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 2, bright);
+                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 2, jSlider.getValue());
                     this.updateImageData(this.viewer.currentImage);
                 }
                 break;
             case "green":
                 if (this.selectedZoneAll && this.updatedInfo) {
                     this.applyPreviousChanges(this.viewer.currentImage);
-                    int bright = this.getModifier(jSlider.getValue(), this.viewer.currentImage.getGreenSliderValue());
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 1, bright);
+                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 1, jSlider.getValue());
                     this.updateImageData(this.viewer.currentImage);
                 }
                 break;
             case "blue":
                 if (this.selectedZoneAll && this.updatedInfo) {
                     this.applyPreviousChanges(this.viewer.currentImage);
-                    int bright = this.getModifier(jSlider.getValue(), this.viewer.currentImage.getBlueSliderValue());
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 0, bright);
+                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 0, jSlider.getValue());
                     this.updateImageData(this.viewer.currentImage);
                 }
                 break;

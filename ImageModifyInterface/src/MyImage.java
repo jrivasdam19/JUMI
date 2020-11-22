@@ -70,10 +70,6 @@ public class MyImage {
         return image;
     }
 
-    public void setImage(BufferedImage image) {
-        this.image = image;
-    }
-
     public int getWidth() {
         return width;
     }
@@ -110,4 +106,5 @@ public class MyImage {
             rgbVector[i] = Byte.toUnsignedInt(pixels[i]);
         }
     }
+
 }

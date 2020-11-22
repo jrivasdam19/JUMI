@@ -14,26 +14,25 @@ public class InterfaceFrame extends JFrame {
         this.createFrame();
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+
     public static void main(String[] args) {
         InterfaceFrame interfaceFrame = new InterfaceFrame();
         interfaceFrame.setVisible(true);
     }
+
     // -----------------------------------------------------------------------------------------------------------------
-    /*@Override
-    public void run() {
 
-    }*/
-    // -----------------------------------------------------------------------------------------------------------------
-    private void createFrame(){
+    private void addControlPaneToFrame(Container container){
+        GridBagConstraints c=new GridBagConstraints();
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        this.setLayout(new GridBagLayout());
-
-        Container container = this.getContentPane();
-        this.addViewerToFrame(container);
-        this.addControlPaneToFrame(container);
-        this.pack();
+        c.gridx=0;
+        c.gridy=0;
+        c.gridwidth=1;
+        c.gridheight=1;
+        c.fill=GridBagConstraints.NONE;
+        c.anchor=GridBagConstraints.NORTHWEST;
+        container.add(this.controlPanel,c);
     }
 
     private void addViewerToFrame(Container container){
@@ -49,15 +48,15 @@ public class InterfaceFrame extends JFrame {
         container.add(this.viewer,c);
     }
 
-    private void addControlPaneToFrame(Container container){
-        GridBagConstraints c=new GridBagConstraints();
+    private void createFrame(){
 
-        c.gridx=0;
-        c.gridy=0;
-        c.gridwidth=1;
-        c.gridheight=1;
-        c.fill=GridBagConstraints.NONE;
-        c.anchor=GridBagConstraints.NORTHWEST;
-        container.add(this.controlPanel,c);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setLayout(new GridBagLayout());
+
+        Container container = this.getContentPane();
+        this.addViewerToFrame(container);
+        this.addControlPaneToFrame(container);
+        this.pack();
     }
 }
