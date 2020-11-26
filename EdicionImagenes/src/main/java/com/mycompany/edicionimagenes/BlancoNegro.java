@@ -80,7 +80,7 @@ class LaminaConImagen extends JPanel {
             }
         }
     }
-
+//(profundidadT * ancho imagen T * Yactual)+(profundidadT * Xactual)+profundidadActual;
     public static void convolucionPixelVector(int i, int j, int k) {
         int posicionVectorFinal = (3 * imagenColor.getWidth() * i) + (3 * j) + k;
         for (int l = 0; l < kernel.length; l++) {

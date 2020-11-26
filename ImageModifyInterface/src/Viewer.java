@@ -22,7 +22,7 @@ public class Viewer extends Canvas implements Runnable {
 
     //------------------------------------------------------------------------------------------------------------------
 
-    public void applyKernel(int i, int j, int k, MyImage image, int [][]kernel) {
+    public void applyKernel(int i, int j, int k, MyImage image, int[][] kernel) {
         int[] newVector = new int[image.pixels.length];
         int finalVectorPos = (3 * image.getWidth() * i) + (3 * j) + k;
         for (int l = 0; l < kernel.length; l++) {
@@ -44,18 +44,36 @@ public class Viewer extends Canvas implements Runnable {
         return x;
     }
 
-    public void convertToBlackAndWhite(MyImage image) {
-        for (int i = 0; i < image.rgbVector.length; i += 3) {
-            int a1, a2, a3;
-            a1 = image.rgbVector[i];
-            a2 = image.rgbVector[i + 1];
-            a3 = image.rgbVector[i + 2];
-            int rgb = (a1 + a2 + a3) / 3;
-            for (int j = i; j < i + 3; j++) {
-                image.pixels[j] = (byte) rgb;
+    public int getVectorPosition(MyImage image, int i, int j, int k) {
+        int vectorPosition = (3 * image.getWidth() * i) + (3 * j) + k;
+        return vectorPosition;
+    }
+
+    public void squareBlackAndWhite(MyImage image, boolean square) {
+        for (int i = 0; i < image.getHeight(); i++) {
+            for (int j = 0; j < image.getWidth(); j++) {
+                for (int k = 0; k < 3; k += 3) {
+                    if (!square & (i > image.getInitialLocY() & i < image.getFinalLocY()) & (j > image.getInitialLocX() & j < image.getFinalLocX())) {
+                        this.applyBlackAndWhite(image, i, j, k);
+                    } else {
+                        this.applyBlackAndWhite(image, i, j, k);
+                    }
+                }
             }
         }
     }
+
+    public void applyBlackAndWhite(MyImage image, int i, int j, int k) {
+        int a1, a2, a3;
+        a1 = image.rgbVector[this.getVectorPosition(image, i, j, k)];
+        a2 = image.rgbVector[this.getVectorPosition(image, i, j, k + 1)];
+        a3 = image.rgbVector[this.getVectorPosition(image, i, j, k + 2)];
+        int rgb = (a1 + a2 + a3) / 3;
+        image.pixels[this.getVectorPosition(image, i, j, k)] = (byte) rgb;
+        image.pixels[this.getVectorPosition(image, i, j, k + 1)] = (byte) rgb;
+        image.pixels[this.getVectorPosition(image, i, j, k + 2)] = (byte) rgb;
+    }
+    
 
     public int[][] getFocusKernel(int currentFocus, int sliderValue, int[][] kernel) {
         if (currentFocus > sliderValue) {
@@ -89,8 +107,8 @@ public class Viewer extends Canvas implements Runnable {
         }
     }
 
-    public void modifyFocus(MyImage image, int sliderValue, int[][]kernel) {
-        for (int x = 0; x < Math.abs(sliderValue)+1; x++) {
+    public void modifyFocus(MyImage image, int sliderValue, int[][] kernel) {
+        for (int x = 0; x < Math.abs(sliderValue) + 1; x++) {
             for (int i = 1; i < image.getHeight() - 1; i++) {
                 for (int j = 1; j < image.getWidth() - 1; j++) {
                     for (int k = 0; k < 3; k++) {

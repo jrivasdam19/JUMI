@@ -15,8 +15,13 @@ public class MyImage {
     private BufferedImage image;
     private int width;
     private int height;
-    public byte[]pixels;
-    public int[]rgbVector;
+    private int initialLocX;
+    private int initialLocY;
+    private int finalLocX;
+    private int finalLocY;
+    public byte[] pixels;
+    public int[] rgbVector;
+
 
     public int getBlueSliderValue() {
         return blueSliderValue;
@@ -86,6 +91,38 @@ public class MyImage {
         this.height = height;
     }
 
+    public int getInitialLocX() {
+        return initialLocX;
+    }
+
+    public void setInitialLocX(int initialLocX) {
+        this.initialLocX = initialLocX;
+    }
+
+    public int getInitialLocY() {
+        return initialLocY;
+    }
+
+    public void setInitialLocY(int initialLocY) {
+        this.initialLocY = initialLocY;
+    }
+
+    public int getFinalLocX() {
+        return finalLocX;
+    }
+
+    public void setFinalLocX(int finalLocX) {
+        this.finalLocX = finalLocX;
+    }
+
+    public int getFinalLocY() {
+        return finalLocY;
+    }
+
+    public void setFinalLocY(int finalLocY) {
+        this.finalLocY = finalLocY;
+    }
+
     public MyImage(String path) {
         try {
             this.image = ImageIO.read(new File(path));
@@ -98,6 +135,10 @@ public class MyImage {
         this.sizeSliderValue = 0;
         this.focusSliderValue = 0;
         this.brightSliderValue = 0;
+        this.initialLocX = 0;
+        this.initialLocY = 0;
+        this.finalLocX = 0;
+        this.finalLocY = 0;
         this.width = this.image.getWidth();
         this.height = this.image.getHeight();
         this.pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();

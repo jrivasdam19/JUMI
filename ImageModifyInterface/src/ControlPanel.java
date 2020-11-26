@@ -353,6 +353,18 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.focus.setEnabled(true);
     }
 
+    private int getInitialLoc(MyImage image) {
+        int iLoc;
+        iLoc = (3 * image.getWidth() * image.getInitialLocY()) + (3 * image.getInitialLocX()) + 0;
+        return iLoc;
+    }
+
+    private int getFinalLoc(MyImage image) {
+        int fLoc;
+        fLoc = (3 * image.getWidth() * image.getFinalLocY()) + (3 * image.getFinalLocX()) + 3;
+        return fLoc;
+    }
+
     private void selectImage(MyImage image) {
         this.setJTableData(this.dataFromImage, image);
         this.updateSliders(image);
@@ -372,8 +384,15 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         table.setValueAt(checkAlpha(image.getImage()), 4, 1);
     }
 
-    private void swapSelectedZone(boolean term) {
-        this.selectedZoneAll = term;
+    private void setSquareSize(MyImage image, double percentage) {
+        int middlePointX = image.getWidth() / 2;
+        int middlePointY = image.getHeight() / 2;
+        int incrementY = (int) ((image.getHeight() * (percentage / 100)) / 2);
+        int incrementX = (int) ((image.getWidth() * (percentage / 100)) / 2);
+        image.setInitialLocY(middlePointY - incrementY);
+        image.setFinalLocY(middlePointY + incrementY);
+        image.setInitialLocX(middlePointX - incrementX);
+        image.setFinalLocX(middlePointX + incrementX);
     }
 
     private void updateImageData(MyImage image) {
@@ -416,61 +435,62 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
             case "1":
                 this.selectFirst.setEnabled(false);
                 this.enableButtons(this.selectSecond, this.selectThird, this.selectFourth);
-                if (this.selectedZoneAll) {
-                    this.selectImage(this.viewer.Image1);
-                }
+                this.selectImage(this.viewer.Image1);
                 break;
             case "2":
                 this.selectSecond.setEnabled(false);
                 this.enableButtons(this.selectFirst, this.selectThird, this.selectFourth);
-                if (this.selectedZoneAll) {
-                    this.selectImage(this.viewer.Image2);
-                }
+                this.selectImage(this.viewer.Image2);
                 break;
             case "3":
                 this.selectThird.setEnabled(false);
                 this.enableButtons(this.selectFirst, this.selectSecond, this.selectFourth);
-                if (this.selectedZoneAll) {
-                    this.selectImage(this.viewer.Image3);
-                }
+                this.selectImage(this.viewer.Image3);
                 break;
             case "4":
                 this.selectFourth.setEnabled(false);
                 this.enableButtons(this.selectFirst, this.selectThird, this.selectSecond);
-                if (this.selectedZoneAll) {
-                    this.selectImage(this.viewer.Image4);
-                }
+                this.selectImage(this.viewer.Image4);
             case "All":
-                //Working
+                this.selectedZoneAll = true;
+                this.selectAll.setEnabled(false);
+                this.selectSquare.setEnabled(true);
+                this.squareSize.setEnabled(false);
                 break;
             case "Resizeable Frame":
-                //Working
+                this.selectedZoneAll = false;
+                this.selectSquare.setEnabled(false);
+                this.selectAll.setEnabled(true);
+                this.squareSize.setEnabled(true);
                 break;
             case "Reset Brightness":
                 if (this.selectedZoneAll) {
-                    if(!this.selectFirst.isEnabled()){
-                        this.viewer.Image1=new MyImage(Viewer.imagePath);
+                    if (!this.selectFirst.isEnabled()) {
+                        this.viewer.Image1 = new MyImage(Viewer.imagePath);
                         this.viewer.currentImage = this.viewer.Image1;
                     }
-                    if(!this.selectSecond.isEnabled()){
-                        this.viewer.Image2=new MyImage(Viewer.imagePath);
+                    if (!this.selectSecond.isEnabled()) {
+                        this.viewer.Image2 = new MyImage(Viewer.imagePath);
                         this.viewer.currentImage = this.viewer.Image2;
                     }
-                    if(!this.selectThird.isEnabled()){
-                        this.viewer.Image3=new MyImage(Viewer.imagePath);
+                    if (!this.selectThird.isEnabled()) {
+                        this.viewer.Image3 = new MyImage(Viewer.imagePath);
                         this.viewer.currentImage = this.viewer.Image3;
                     }
-                    if(!this.selectFourth.isEnabled()){
-                        this.viewer.Image4=new MyImage(Viewer.imagePath);
+                    if (!this.selectFourth.isEnabled()) {
+                        this.viewer.Image4 = new MyImage(Viewer.imagePath);
                         this.viewer.currentImage = this.viewer.Image4;
                     }
                     this.updateSliders(this.viewer.currentImage);
                 }
                 break;
             case "Black & White":
-                if (this.selectedZoneAll) {
+                /*if (this.selectedZoneAll) {
                     this.viewer.convertToBlackAndWhite(this.viewer.currentImage);
-                }
+                } else {
+                    this.viewer.squareBlackAndWhite(this.viewer.currentImage);
+                }*/
+                this.viewer.squareBlackAndWhite(this.viewer.currentImage, this.selectedZoneAll);
                 break;
             default:
                 System.out.println("Not Handled ActionListener in " + e);
@@ -487,11 +507,19 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
             return;
         }
         switch (sliderName) {
-            case "frameSize":
-                //Working
+            case "squareSize":
+                if (this.updatedInfo) {
+                    this.applyPreviousChanges(this.viewer.currentImage);
+                    this.setSquareSize(this.viewer.currentImage, jSlider.getValue());
+                    this.updateImageData(this.viewer.currentImage);
+                }
                 break;
             case "bright":
                 if (this.selectedZoneAll && this.updatedInfo) {
+                    this.applyPreviousChanges(this.viewer.currentImage);
+                    this.viewer.modifyBrightness(this.viewer.currentImage, jSlider.getValue());
+                    this.updateImageData(this.viewer.currentImage);
+                } else if (!this.selectedZoneAll && this.updatedInfo) {
                     this.applyPreviousChanges(this.viewer.currentImage);
                     this.viewer.modifyBrightness(this.viewer.currentImage, jSlider.getValue());
                     this.updateImageData(this.viewer.currentImage);
