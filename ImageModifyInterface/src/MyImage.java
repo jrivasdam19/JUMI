@@ -6,45 +6,38 @@ import java.io.IOException;
 
 public class MyImage {
 
-    private int blueSliderValue;
-    private int greenSliderValue;
-    private int redSliderValue;
-    private int sizeSliderValue;
-    private int focusSliderValue;
-    private int brightSliderValue;
+    private int blueSliderValueIn, blueSliderValueOut, greenSliderValueIn, greenSliderValueOut, redSliderValueIn,
+            redSliderValueOut, sizeSliderValue, focusSliderValueIn, focusSliderValueOut, brightSliderValueIn,
+            brightSliderValueOut, width, height, initialLocX, initialLocY, finalLocX, finalLocY;
+    private boolean isGreyInside, isGreyOutside, isBlueInside, isBlueOutside, isRedInside, isRedOutside, isGreenInside,
+            isGreenOutside, isFocusInside, isFocusOutside, isBrightInside, isBrightOutside;
     private BufferedImage image;
-    private int width;
-    private int height;
-    private int initialLocX;
-    private int initialLocY;
-    private int finalLocX;
-    private int finalLocY;
     public byte[] pixels;
     public int[] rgbVector;
 
 
-    public int getBlueSliderValue() {
-        return blueSliderValue;
+    public int getBlueSliderValueIn() {
+        return blueSliderValueIn;
     }
 
-    public void setBlueSliderValue(int blueSliderValue) {
-        this.blueSliderValue = blueSliderValue;
+    public void setBlueSliderValueIn(int blueSliderValueIn) {
+        this.blueSliderValueIn = blueSliderValueIn;
     }
 
-    public int getGreenSliderValue() {
-        return greenSliderValue;
+    public int getGreenSliderValueIn() {
+        return greenSliderValueIn;
     }
 
-    public void setGreenSliderValue(int greenSliderValue) {
-        this.greenSliderValue = greenSliderValue;
+    public void setGreenSliderValueIn(int greenSliderValueIn) {
+        this.greenSliderValueIn = greenSliderValueIn;
     }
 
-    public int getRedSliderValue() {
-        return redSliderValue;
+    public int getRedSliderValueIn() {
+        return redSliderValueIn;
     }
 
-    public void setRedSliderValue(int redSliderValue) {
-        this.redSliderValue = redSliderValue;
+    public void setRedSliderValueIn(int redSliderValueIn) {
+        this.redSliderValueIn = redSliderValueIn;
     }
 
     public int getSizeSliderValue() {
@@ -55,20 +48,20 @@ public class MyImage {
         this.sizeSliderValue = sizeSliderValue;
     }
 
-    public int getFocusSliderValue() {
-        return focusSliderValue;
+    public int getFocusSliderValueIn() {
+        return focusSliderValueIn;
     }
 
-    public void setFocusSliderValue(int focusSliderValue) {
-        this.focusSliderValue = focusSliderValue;
+    public void setFocusSliderValueIn(int focusSliderValueIn) {
+        this.focusSliderValueIn = focusSliderValueIn;
     }
 
-    public int getBrightSliderValue() {
-        return brightSliderValue;
+    public int getBrightSliderValueIn() {
+        return brightSliderValueIn;
     }
 
-    public void setBrightSliderValue(int brightSliderValue) {
-        this.brightSliderValue = brightSliderValue;
+    public void setBrightSliderValueIn(int brightSliderValueIn) {
+        this.brightSliderValueIn = brightSliderValueIn;
     }
 
     public BufferedImage getImage() {
@@ -123,22 +116,168 @@ public class MyImage {
         this.finalLocY = finalLocY;
     }
 
+    public boolean isGreyInside() {
+        return isGreyInside;
+    }
+
+    public void setGreyInside(boolean greyInside) {
+        isGreyInside = greyInside;
+    }
+
+    public boolean isGreyOutside() {
+        return isGreyOutside;
+    }
+
+    public void setGreyOutside(boolean greyOutside) {
+        isGreyOutside = greyOutside;
+    }
+
+    public boolean isBlueInside() {
+        return isBlueInside;
+    }
+
+    public void setBlueInside(boolean blueInside) {
+        isBlueInside = blueInside;
+    }
+
+    public boolean isBlueOutside() {
+        return isBlueOutside;
+    }
+
+    public void setBlueOutside(boolean blueOutside) {
+        isBlueOutside = blueOutside;
+    }
+
+    public boolean isRedInside() {
+        return isRedInside;
+    }
+
+    public void setRedInside(boolean redInside) {
+        isRedInside = redInside;
+    }
+
+    public boolean isRedOutside() {
+        return isRedOutside;
+    }
+
+    public void setRedOutside(boolean redOutside) {
+        isRedOutside = redOutside;
+    }
+
+    public boolean isGreenInside() {
+        return isGreenInside;
+    }
+
+    public void setGreenInside(boolean greenInside) {
+        isGreenInside = greenInside;
+    }
+
+    public boolean isGreenOutside() {
+        return isGreenOutside;
+    }
+
+    public void setGreenOutside(boolean greenOutside) {
+        isGreenOutside = greenOutside;
+    }
+
+    public boolean isFocusInside() {
+        return isFocusInside;
+    }
+
+    public void setFocusInside(boolean focusInside) {
+        isFocusInside = focusInside;
+    }
+
+    public boolean isFocusOutside() {
+        return isFocusOutside;
+    }
+
+    public void setFocusOutside(boolean focusOutside) {
+        isFocusOutside = focusOutside;
+    }
+
+    public boolean isBrightInside() {
+        return isBrightInside;
+    }
+
+    public void setBrightInside(boolean brightInside) {
+        isBrightInside = brightInside;
+    }
+
+    public boolean isBrightOutside() {
+        return isBrightOutside;
+    }
+
+    public void setBrightOutside(boolean brightOutside) {
+        isBrightOutside = brightOutside;
+    }
+
+    public int getBlueSliderValueOut() {
+        return blueSliderValueOut;
+    }
+
+    public void setBlueSliderValueOut(int blueSliderValueOut) {
+        this.blueSliderValueOut = blueSliderValueOut;
+    }
+
+    public int getGreenSliderValueOut() {
+        return greenSliderValueOut;
+    }
+
+    public void setGreenSliderValueOut(int greenSliderValueOut) {
+        this.greenSliderValueOut = greenSliderValueOut;
+    }
+
+    public int getRedSliderValueOut() {
+        return redSliderValueOut;
+    }
+
+    public void setRedSliderValueOut(int redSliderValueOut) {
+        this.redSliderValueOut = redSliderValueOut;
+    }
+
+    public int getFocusSliderValueOut() {
+        return focusSliderValueOut;
+    }
+
+    public void setFocusSliderValueOut(int focusSliderValueOut) {
+        this.focusSliderValueOut = focusSliderValueOut;
+    }
+
+    public int getBrightSliderValueOut() {
+        return brightSliderValueOut;
+    }
+
+    public void setBrightSliderValueOut(int brightSliderValueOut) {
+        this.brightSliderValueOut = brightSliderValueOut;
+    }
+
     public MyImage(String path) {
         try {
             this.image = ImageIO.read(new File(path));
         } catch (IOException e) {
             System.out.println("File not found.");
         }
-        this.blueSliderValue = 0;
-        this.redSliderValue = 0;
-        this.greenSliderValue = 0;
+        this.blueSliderValueIn = 0;
+        this.redSliderValueIn = 0;
+        this.greenSliderValueIn = 0;
         this.sizeSliderValue = 0;
-        this.focusSliderValue = 0;
-        this.brightSliderValue = 0;
+        this.focusSliderValueIn = 0;
+        this.brightSliderValueIn = 0;
         this.initialLocX = 0;
         this.initialLocY = 0;
         this.finalLocX = 0;
         this.finalLocY = 0;
+        this.isGreyInside = false;
+        this.isGreyOutside = false;
+        this.isBlueInside = false;
+        this.isBlueOutside = false;
+        this.isRedInside = false;
+        this.isRedOutside = false;
+        this.isGreyInside = false;
+        this.isGreyOutside = false;
+        this.isBrightInside = false;
+        this.isBrightOutside = false;
         this.width = this.image.getWidth();
         this.height = this.image.getHeight();
         this.pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();

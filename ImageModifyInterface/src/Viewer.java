@@ -53,15 +53,83 @@ public class Viewer extends Canvas implements Runnable {
         for (int i = 0; i < image.getHeight(); i++) {
             for (int j = 0; j < image.getWidth(); j++) {
                 for (int k = 0; k < 3; k += 3) {
-                    if (!square & (i > image.getInitialLocY() & i < image.getFinalLocY()) & (j > image.getInitialLocX() & j < image.getFinalLocX())) {
-                        this.applyBlackAndWhite(image, i, j, k);
+                    if ((i > image.getInitialLocY() & i < image.getFinalLocY()) & (j > image.getInitialLocX() & j < image.getFinalLocX())) {
+                        if (!square) {
+                            this.applyBlackAndWhite(image, i, j, k);
+                            image.setGreyInside(true);
+                        }
                     } else {
-                        this.applyBlackAndWhite(image, i, j, k);
+                        if (square) {
+                            this.applyBlackAndWhite(image, i, j, k);
+                            image.setGreyOutside(true);
+                        }
                     }
                 }
             }
         }
     }
+
+    public void selectModificableZone(MyImage image, boolean square) {
+        for (int i = 0; i < image.getHeight(); i++) {
+            for (int j = 0; j < image.getWidth(); j++) {
+                for (int k = 0; k < 3; k += 3) {
+                    if ((i > image.getInitialLocY() & i < image.getFinalLocY()) & (j > image.getInitialLocX() & j < image.getFinalLocX())) {
+                        if (!square) {
+                            this.checkInsideProperties(image,i,j,k);
+                        }
+                    } else {
+                        if (square) {
+                            this.checkOutsideProperties(image,i,j,k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void checkInsideProperties(MyImage image, int i, int j, int k){
+        if(image.isGreyInside()){
+            this.applyBlackAndWhite(image, i, j, k);
+        }
+        if(image.isBlueInside()){
+            this.applyRGBBrightness(image,0,ControlPanel.blueSliderValue,i,j);
+        }
+        if(image.isGreenInside()){
+            this.applyRGBBrightness(image,1,ControlPanel.greenSliderValue,i,j);
+        }
+        if(image.isRedInside()){
+            this.applyRGBBrightness(image,2,ControlPanel.redSliderValue,i,j);
+        }
+        if(image.isBrightInside()){
+            this.applyBrightness(image,i,j,k,ControlPanel.brightSliderValue);
+        }
+        if(image.isFocusInside()){
+
+        }
+    }
+
+    public void checkOutsideProperties(MyImage image, int i, int j, int k){
+        if(image.isGreyOutside()){
+            this.applyBlackAndWhite(image, i, j, k);
+        }
+        if(image.isBlueOutside()){
+            this.applyRGBBrightness(image,0,ControlPanel.blueSliderValue,i,j);
+        }
+        if(image.isGreenOutside()){
+            this.applyRGBBrightness(image,1,ControlPanel.greenSliderValue,i,j);
+        }
+        if(image.isRedOutside()){
+            this.applyRGBBrightness(image,2,ControlPanel.redSliderValue,i,j);
+        }
+        if(image.isBrightOutside()){
+            this.applyBrightness(image,i,j,k,ControlPanel.brightSliderValue);
+        }
+        if(image.isFocusOutside()){
+
+        }
+    }
+
+
 
     public void applyBlackAndWhite(MyImage image, int i, int j, int k) {
         int a1, a2, a3;
@@ -73,7 +141,7 @@ public class Viewer extends Canvas implements Runnable {
         image.pixels[this.getVectorPosition(image, i, j, k + 1)] = (byte) rgb;
         image.pixels[this.getVectorPosition(image, i, j, k + 2)] = (byte) rgb;
     }
-    
+
 
     public int[][] getFocusKernel(int currentFocus, int sliderValue, int[][] kernel) {
         if (currentFocus > sliderValue) {
@@ -90,6 +158,19 @@ public class Viewer extends Canvas implements Runnable {
         this.Image3 = new MyImage(imagePath);
         this.Image4 = new MyImage(imagePath);
         this.originalImage = new MyImage(imagePath);
+    }
+
+    public void applyBrightness(MyImage image, int i, int j, int k, int bright) {
+        int a1, a2, a3;
+        a1 = image.rgbVector[this.getVectorPosition(image, i, j, k)] + bright;
+        a1 = check255(a1);
+        a2 = image.rgbVector[this.getVectorPosition(image, i, j, k + 1)] + bright;
+        a2 = check255(a2);
+        a3 = image.rgbVector[this.getVectorPosition(image, i, j, k + 2)] + bright;
+        a3 = check255(a3);
+        image.pixels[this.getVectorPosition(image, i, j, k)] = (byte) a1;
+        image.pixels[this.getVectorPosition(image, i, j, k + 1)] = (byte) a2;
+        image.pixels[this.getVectorPosition(image, i, j, k + 2)] = (byte) a3;
     }
 
     public void modifyBrightness(MyImage image, int bright) {
@@ -117,6 +198,13 @@ public class Viewer extends Canvas implements Runnable {
                 }
             }
         }
+    }
+
+    public void applyRGBBrightness(MyImage image, int channel, int bright, int i, int j){
+        int rgbChannel;
+        rgbChannel = image.rgbVector[this.getVectorPosition(image, i, j, channel)] + bright;
+        rgbChannel = this.check255(rgbChannel);
+        image.pixels[this.getVectorPosition(image, i, j, channel)] = (byte) rgbChannel;
     }
 
     public void modifyRGBChannel(MyImage image, int channel, int bright) {
