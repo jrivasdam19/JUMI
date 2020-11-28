@@ -5,27 +5,26 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 
 public class ControlPanel extends JPanel implements ActionListener, ChangeListener {
-    private Viewer viewer;
+    private final Viewer viewer;
 
     private JButton loadImage, selectFirst, selectSecond, selectThird, selectFourth, selectAll, selectSquare, brightness,
-            blackAndWhite, fire;
+            blackAndWhite;
     private final String[] buttonNames = {"Load Image", "1", "2", "3", "4", "All", "Resizeable Frame",
             "Reset Brightness", "Black & White", "Set Fire"};
 
     private JTable dataFromImage;
     private final String[] firstRow = {"Description", "Value"};
     private final String[] rawText = {"FILE", "IMAGE", "ZONE", "Size", "BRIGHTNESS", "Total", "Red Channel", "Green Channel",
-            "Blue Channel", "COLOR", "FILTERS", "Focus", "Unfocus", "EFECTS"};
+            "Blue Channel", "COLOR", "FILTERS", "UnFocus", "Focus"};
 
     private JSlider squareSize, bright, red, green, blue, focus;
 
-    public static int blueSliderValue, greenSliderValue, redSliderValue, sizeSliderValue, focusSliderValue, brightSliderValue;
+    public static int blueSliderValue, greenSliderValue, redSliderValue, brightSliderValue;
 
-    private boolean selectedZoneAll = true;
-    private boolean updatedInfo = true;
+    public static int[][] kernel = new int[3][3];
+    private boolean selectedZoneAll, updatedInfo;
 
     public ControlPanel(Viewer viewer) {
         this.setLayout(new GridBagLayout());
@@ -218,82 +217,99 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         c.weightx = 0.0;
         c.fill = GridBagConstraints.NONE;
         this.add(plainText, c);
-
-        plainText = new JLabel(this.rawText[13]);
-        c.gridx = 0;
-        c.gridy = 14;
-        this.add(plainText, c);
-
-        c.gridx = 1;
-        c.gridwidth = 2;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        this.add(this.fire, c);
     }
 
     private void applyPreviousChangesInside(MyImage image) {
-        if(image.isGreyInside()){
-            this.viewer.selectModificableZone(image,false);
+        if (image.isGreyInside()) {
+            this.viewer.selectModificableZone(image, false);
         }
-        if (image.isBrightInside()) {
+        if (image.getBrightSliderValueIn() != 0) {
             ControlPanel.brightSliderValue = image.getBrightSliderValueIn();
+            image.setBrightInside(true);
             this.viewer.selectModificableZone(image, false);
-            this.viewer.currentImage.setBrightInside(false);
-            ControlPanel.brightSliderValue = 0;
+            image.setBrightInside(false);
         }
-        if (image.isRedInside()) {
+        if (image.getRedSliderValueIn() != 0) {
             ControlPanel.redSliderValue = image.getRedSliderValueIn();
+            image.setRedInside(true);
             this.viewer.selectModificableZone(image, false);
-            this.viewer.currentImage.setRedInside(false);
-            ControlPanel.redSliderValue = 0;
+            image.setRedInside(false);
         }
-        if (image.isGreenInside()) {
+        if (image.getGreenSliderValueIn() != 0) {
             ControlPanel.greenSliderValue = image.getGreenSliderValueIn();
+            image.setGreenInside(true);
             this.viewer.selectModificableZone(image, false);
-            this.viewer.currentImage.setGreenInside(false);
-            ControlPanel.greenSliderValue = 0;
+            image.setGreenInside(false);
         }
-        if (image.isBlueInside()) {
+        if (image.getBlueSliderValueIn() != 0) {
             ControlPanel.blueSliderValue = image.getBlueSliderValueIn();
+            image.setBlueInside(true);
             this.viewer.selectModificableZone(image, false);
-            this.viewer.currentImage.setBlueInside(false);
-            ControlPanel.blueSliderValue = 0;
+            image.setBlueInside(false);
         }
-        if (image.isFocusInside()) {
-
+        if (image.getFocusSliderValueIn() != 0) {
+            boolean focus;
+            int jSliderValue = image.getFocusSliderValueIn();
+            if (jSliderValue > 0) {
+                ControlPanel.kernel = this.viewer.focusKernel;
+                focus = true;
+                for (int i = 0; i < jSliderValue; i++) {
+                    this.viewer.applyKernel(this.viewer.currentImage, false, focus);
+                }
+            } else if (jSliderValue < 0) {
+                ControlPanel.kernel = this.viewer.unFocusKernel;
+                focus = false;
+                for (int i = 0; i < Math.abs(jSliderValue); i++) {
+                    this.viewer.applyKernel(this.viewer.currentImage, false, focus);
+                }
+            }
         }
     }
 
     private void applyPreviousChangesOutside(MyImage image) {
-        if(image.isGreyOutside()){
-            this.viewer.selectModificableZone(image,true);
+        if (image.isGreyOutside()) {
+            this.viewer.selectModificableZone(image, true);
         }
-        if (image.isBrightOutside()) {
+        if (image.getBrightSliderValueOut() != 0) {
             ControlPanel.brightSliderValue = image.getBrightSliderValueOut();
+            image.setBrightOutside(true);
             this.viewer.selectModificableZone(image, true);
-            this.viewer.currentImage.setBrightOutside(false);
-            ControlPanel.brightSliderValue = 0;
+            image.setBrightOutside(false);
         }
-        if (image.isRedOutside()) {
+        if (image.getRedSliderValueOut() != 0) {
             ControlPanel.redSliderValue = image.getRedSliderValueOut();
+            image.setRedOutside(true);
             this.viewer.selectModificableZone(image, true);
-            this.viewer.currentImage.setRedOutside(false);
-            ControlPanel.redSliderValue = 0;
+            image.setRedOutside(false);
         }
-        if (image.isGreenOutside()) {
+        if (image.getGreenSliderValueOut() != 0) {
             ControlPanel.greenSliderValue = image.getGreenSliderValueOut();
+            image.setGreenOutside(true);
             this.viewer.selectModificableZone(image, true);
-            this.viewer.currentImage.setGreenOutside(false);
-            ControlPanel.greenSliderValue = 0;
+            image.setGreenOutside(false);
         }
-        if (image.isBlueOutside()) {
+        if (image.getBlueSliderValueOut() != 0) {
             ControlPanel.blueSliderValue = image.getBlueSliderValueOut();
+            image.setBlueOutside(true);
             this.viewer.selectModificableZone(image, true);
-            this.viewer.currentImage.setBlueOutside(false);
-            ControlPanel.blueSliderValue = 0;
+            image.setBlueOutside(false);
         }
-        if (image.isFocusOutside()) {
-
+        if (image.getFocusSliderValueOut() != 0) {
+            boolean focus;
+            int jSliderValue = image.getFocusSliderValueOut();
+            if (jSliderValue > 0) {
+                ControlPanel.kernel = this.viewer.focusKernel;
+                focus = true;
+                for (int i = 0; i < jSliderValue; i++) {
+                    this.viewer.applyKernel(this.viewer.currentImage, true, focus);
+                }
+            } else if (jSliderValue < 0) {
+                ControlPanel.kernel = this.viewer.unFocusKernel;
+                focus = false;
+                for (int i = 0; i < Math.abs(jSliderValue); i++) {
+                    this.viewer.applyKernel(this.viewer.currentImage, true, focus);
+                }
+            }
         }
     }
 
@@ -334,9 +350,6 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.blackAndWhite = new JButton(buttonNames[8]);
         this.blackAndWhite.addActionListener(this);
         this.blackAndWhite.setEnabled(false);
-        this.fire = new JButton(buttonNames[9]);
-        this.fire.addActionListener(this);
-        this.fire.setEnabled(false);
     }
 
     private void createJSliders() {
@@ -371,8 +384,6 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         ControlPanel.redSliderValue = 0;
         ControlPanel.greenSliderValue = 0;
         ControlPanel.brightSliderValue = 0;
-        ControlPanel.focusSliderValue = 0;
-        ControlPanel.sizeSliderValue = 0;
     }
 
     private void createPanel() {
@@ -393,10 +404,10 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.selectSecond.setEnabled(true);
         this.selectThird.setEnabled(true);
         this.selectFourth.setEnabled(true);
+        this.selectAll.setEnabled(false);
         this.selectSquare.setEnabled(true);
         this.brightness.setEnabled(true);
         this.blackAndWhite.setEnabled(true);
-        this.fire.setEnabled(true);
         this.bright.setEnabled(true);
         this.red.setEnabled(true);
         this.green.setEnabled(true);
@@ -404,16 +415,28 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         this.focus.setEnabled(true);
     }
 
-    private int getInitialLoc(MyImage image) {
-        int iLoc;
-        iLoc = (3 * image.getWidth() * image.getInitialLocY()) + (3 * image.getInitialLocX()) + 0;
-        return iLoc;
+    private void resetImage(MyImage image) {
+        for (int i = 0; i < image.pixels.length; i++) {
+            image.pixels[i] = this.viewer.originalImage.pixels[i];
+        }
     }
 
-    private int getFinalLoc(MyImage image) {
-        int fLoc;
-        fLoc = (3 * image.getWidth() * image.getFinalLocY()) + (3 * image.getFinalLocX()) + 3;
-        return fLoc;
+    private void resetSliderValuesInside(MyImage image) {
+        image.setBrightSliderValueIn(0);
+        image.setRedSliderValueIn(0);
+        image.setGreenSliderValueIn(0);
+        image.setBlueSliderValueIn(0);
+        image.setGreyInside(false);
+        image.setFocusSliderValueIn(0);
+    }
+
+    private void resetSliderValuesOutside(MyImage image) {
+        image.setBrightSliderValueOut(0);
+        image.setRedSliderValueOut(0);
+        image.setGreenSliderValueOut(0);
+        image.setBlueSliderValueOut(0);
+        image.setGreyOutside(false);
+        image.setFocusSliderValueOut(0);
     }
 
     private void selectImage(MyImage image, boolean outside) {
@@ -457,11 +480,6 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         image.setGreenSliderValueIn(this.green.getValue());
         image.setFocusSliderValueIn(this.focus.getValue());
         image.setSizeSliderValue(this.squareSize.getValue());
-        image.pixels = ((DataBufferByte) image.getImage().getRaster().getDataBuffer()).getData();
-        image.rgbVector = new int[image.pixels.length];
-        for (int i = 0; i < image.pixels.length; i++) {
-            image.rgbVector[i] = Byte.toUnsignedInt(this.viewer.originalImage.pixels[i]);
-        }
     }
 
     private void updateImageDataOutside(MyImage image) {
@@ -470,11 +488,6 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         image.setBlueSliderValueOut(this.blue.getValue());
         image.setGreenSliderValueOut(this.green.getValue());
         image.setFocusSliderValueOut(this.focus.getValue());
-        image.pixels = ((DataBufferByte) image.getImage().getRaster().getDataBuffer()).getData();
-        image.rgbVector = new int[image.pixels.length];
-        for (int i = 0; i < image.pixels.length; i++) {
-            image.rgbVector[i] = Byte.toUnsignedInt(this.viewer.originalImage.pixels[i]);
-        }
     }
 
     private void updateInSliders(MyImage image) {
@@ -508,6 +521,8 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
                 this.enableComponents();
                 this.viewer.loadImages();
                 this.viewer.painting = true;
+                this.selectedZoneAll = true;
+                this.updatedInfo = true;
                 this.selectImage(this.viewer.Image1, this.selectedZoneAll);
                 break;
             case "1":
@@ -546,34 +561,56 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
             case "Reset Brightness":
                 if (this.selectedZoneAll) {
                     if (!this.selectFirst.isEnabled()) {
-                        this.viewer.Image1 = new MyImage(Viewer.imagePath);
+                        this.resetImage(this.viewer.Image1);
                         this.viewer.currentImage = this.viewer.Image1;
                     }
                     if (!this.selectSecond.isEnabled()) {
-                        this.viewer.Image2 = new MyImage(Viewer.imagePath);
+                        this.resetImage(this.viewer.Image2);
                         this.viewer.currentImage = this.viewer.Image2;
                     }
                     if (!this.selectThird.isEnabled()) {
-                        this.viewer.Image3 = new MyImage(Viewer.imagePath);
+                        this.resetImage(this.viewer.Image3);
                         this.viewer.currentImage = this.viewer.Image3;
                     }
                     if (!this.selectFourth.isEnabled()) {
-                        this.viewer.Image4 = new MyImage(Viewer.imagePath);
+                        this.resetImage(this.viewer.Image4);
                         this.viewer.currentImage = this.viewer.Image4;
                     }
+                    this.resetSliderValuesOutside(this.viewer.currentImage);
                     this.updateOutSliders(this.viewer.currentImage);
+                } else {
+                    if (!this.selectFirst.isEnabled()) {
+                        this.resetImage(this.viewer.Image1);
+                        this.viewer.currentImage = this.viewer.Image1;
+                    }
+                    if (!this.selectSecond.isEnabled()) {
+                        this.resetImage(this.viewer.Image2);
+                        this.viewer.currentImage = this.viewer.Image2;
+                    }
+                    if (!this.selectThird.isEnabled()) {
+                        this.resetImage(this.viewer.Image3);
+                        this.viewer.currentImage = this.viewer.Image3;
+                    }
+                    if (!this.selectFourth.isEnabled()) {
+                        this.resetImage(this.viewer.Image4);
+                        this.viewer.currentImage = this.viewer.Image4;
+                    }
+                    this.resetSliderValuesInside(this.viewer.currentImage);
+                    this.updateInSliders(this.viewer.currentImage);
                 }
+                this.applyPreviousChangesOutside(this.viewer.currentImage);
+                this.applyPreviousChangesInside(this.viewer.currentImage);
                 break;
             case "Black & White":
-                if(this.selectedZoneAll){
+                if (this.selectedZoneAll) {
                     this.applyPreviousChangesOutside(this.viewer.currentImage);
                     this.viewer.currentImage.setGreyOutside(true);
-                    this.viewer.selectModificableZone(this.viewer.currentImage,this.selectedZoneAll);
+                    this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                     this.updateImageDataOutside(this.viewer.currentImage);
-                }else{
+                } else if(!this.selectedZoneAll) {
                     this.applyPreviousChangesInside(this.viewer.currentImage);
                     this.viewer.currentImage.setGreyInside(true);
-                    this.viewer.selectModificableZone(this.viewer.currentImage,this.selectedZoneAll);
+                    this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                     this.updateImageDataInside(this.viewer.currentImage);
                 }
                 break;
@@ -594,108 +631,151 @@ public class ControlPanel extends JPanel implements ActionListener, ChangeListen
         switch (sliderName) {
             case "squareSize":
                 if (this.updatedInfo) {
-                    ControlPanel.sizeSliderValue = jSlider.getValue();
                     this.setSquareSize(this.viewer.currentImage, jSlider.getValue());
                     this.updateImageDataInside(this.viewer.currentImage);
+                    this.resetImage(this.viewer.currentImage);
                     this.applyPreviousChangesInside(this.viewer.currentImage);
                     this.applyPreviousChangesOutside(this.viewer.currentImage);
                 }
                 break;
             case "bright":
                 if (this.updatedInfo) {
-                    ControlPanel.brightSliderValue = jSlider.getValue();
                     if (this.selectedZoneAll) {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setBrightSliderValueOut(0);
                         this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        this.applyPreviousChangesInside(this.viewer.currentImage);
+                        ControlPanel.brightSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setBrightOutside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataOutside(this.viewer.currentImage);
+                        this.viewer.currentImage.setBrightOutside(false);
                     } else {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setBrightSliderValueIn(0);
                         this.applyPreviousChangesInside(this.viewer.currentImage);
+                        this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        ControlPanel.brightSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setBrightInside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataInside(this.viewer.currentImage);
+                        this.viewer.currentImage.setBrightInside(false);
                     }
                 }
-                /*if (this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    this.viewer.modifyBrightness(this.viewer.currentImage, jSlider.getValue());
-                    this.updateImageData(this.viewer.currentImage);
-                } else if (!this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    this.viewer.modifyBrightness(this.viewer.currentImage, jSlider.getValue());
-                    this.updateImageData(this.viewer.currentImage);
-                }*/
                 break;
             case "red":
                 if (this.updatedInfo) {
-                    ControlPanel.redSliderValue = jSlider.getValue();
                     if (this.selectedZoneAll) {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setRedSliderValueOut(0);
                         this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        this.applyPreviousChangesInside(this.viewer.currentImage);
+                        ControlPanel.redSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setRedOutside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataOutside(this.viewer.currentImage);
+                        this.viewer.currentImage.setRedOutside(false);
                     } else {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setRedSliderValueIn(0);
                         this.applyPreviousChangesInside(this.viewer.currentImage);
+                        this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        ControlPanel.redSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setRedInside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataInside(this.viewer.currentImage);
+                        this.viewer.currentImage.setRedInside(false);
                     }
                 }
-                /*if (this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 2, jSlider.getValue());
-                    this.updateImageData(this.viewer.currentImage);
-                }*/
                 break;
             case "green":
                 if (this.updatedInfo) {
-                    ControlPanel.greenSliderValue = jSlider.getValue();
                     if (this.selectedZoneAll) {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setGreenSliderValueOut(0);
                         this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        this.applyPreviousChangesInside(this.viewer.currentImage);
+                        ControlPanel.greenSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setGreenOutside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataOutside(this.viewer.currentImage);
+                        this.viewer.currentImage.setGreenOutside(false);
                     } else {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setGreenSliderValueIn(0);
+                        this.applyPreviousChangesOutside(this.viewer.currentImage);
                         this.applyPreviousChangesInside(this.viewer.currentImage);
+                        ControlPanel.greenSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setGreenInside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataInside(this.viewer.currentImage);
+                        this.viewer.currentImage.setGreenInside(false);
                     }
                 }
-                /*if (this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 1, jSlider.getValue());
-                    this.updateImageData(this.viewer.currentImage);
-                }*/
                 break;
             case "blue":
                 if (this.updatedInfo) {
-                    ControlPanel.blueSliderValue = jSlider.getValue();
                     if (this.selectedZoneAll) {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setBlueSliderValueOut(0);
                         this.applyPreviousChangesOutside(this.viewer.currentImage);
+                        this.applyPreviousChangesInside(this.viewer.currentImage);
+                        ControlPanel.blueSliderValue = jSlider.getValue();
                         this.viewer.currentImage.setBlueOutside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataOutside(this.viewer.currentImage);
+                        this.viewer.currentImage.setBlueOutside(false);
                     } else {
+                        this.resetImage(this.viewer.currentImage);
+                        this.viewer.currentImage.setBlueSliderValueIn(0);
+                        this.applyPreviousChangesOutside(this.viewer.currentImage);
                         this.applyPreviousChangesInside(this.viewer.currentImage);
-                        this.viewer.currentImage.setRedInside(true);
+                        ControlPanel.blueSliderValue = jSlider.getValue();
+                        this.viewer.currentImage.setBlueInside(true);
                         this.viewer.selectModificableZone(this.viewer.currentImage, this.selectedZoneAll);
                         this.updateImageDataInside(this.viewer.currentImage);
+                        this.viewer.currentImage.setBlueInside(false);
                     }
                 }
-                /*if (this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    this.viewer.modifyRGBChannel(this.viewer.currentImage, 0, jSlider.getValue());
-                    this.updateImageData(this.viewer.currentImage);
-                }*/
                 break;
             case "focus":
-                if (this.selectedZoneAll && this.updatedInfo) {
-                    this.applyPreviousChanges(this.viewer.currentImage);
-                    int[][] kernel = new int[3][3];
-                    kernel = this.viewer.getFocusKernel(this.viewer.currentImage.getFocusSliderValueIn(), jSlider.getValue(), kernel);
-                    this.viewer.modifyFocus(this.viewer.currentImage, jSlider.getValue(), kernel);
-                    this.updateImageData(this.viewer.currentImage);
+                if (this.updatedInfo) {
+                    boolean focus;
+                    this.resetImage(this.viewer.currentImage);
+                    if(this.selectedZoneAll){
+                        this.viewer.currentImage.setFocusSliderValueOut(0);
+                    }else if(!this.selectedZoneAll){
+                        this.viewer.currentImage.setFocusSliderValueIn(0);
+                    }
+                    this.applyPreviousChangesInside(this.viewer.currentImage);
+                    this.applyPreviousChangesOutside(this.viewer.currentImage);
+                    if (jSlider.getValue() > 0) {
+                        ControlPanel.kernel = this.viewer.focusKernel;
+                        focus = true;
+                        for (int i = 0; i < jSlider.getValue(); i++) {
+                            this.viewer.applyKernel(this.viewer.currentImage, this.selectedZoneAll, focus);
+                        }
+                    } else if (jSlider.getValue() < 0) {
+                        ControlPanel.kernel = this.viewer.unFocusKernel;
+                        focus = false;
+                        for (int i = 0; i < Math.abs(jSlider.getValue()); i++) {
+                            this.viewer.applyKernel(this.viewer.currentImage, this.selectedZoneAll, focus);
+                        }
+                    } else if (jSlider.getValue() == 0) {
+                        this.resetImage(this.viewer.currentImage);
+                        if(this.selectedZoneAll){
+                            this.viewer.currentImage.setFocusSliderValueOut(0);
+                        }else if(!this.selectedZoneAll){
+                            this.viewer.currentImage.setFocusSliderValueIn(0);
+                        }
+                        this.applyPreviousChangesInside(this.viewer.currentImage);
+                        this.applyPreviousChangesOutside(this.viewer.currentImage);
+                    }
+                    if(this.selectedZoneAll){
+                        this.updateImageDataOutside(this.viewer.currentImage);
+                    }else if(!this.selectedZoneAll){
+                        this.updateImageDataInside(this.viewer.currentImage);
+                    }
                 }
                 break;
             default:

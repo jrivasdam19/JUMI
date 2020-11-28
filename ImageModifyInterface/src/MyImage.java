@@ -10,11 +10,10 @@ public class MyImage {
             redSliderValueOut, sizeSliderValue, focusSliderValueIn, focusSliderValueOut, brightSliderValueIn,
             brightSliderValueOut, width, height, initialLocX, initialLocY, finalLocX, finalLocY;
     private boolean isGreyInside, isGreyOutside, isBlueInside, isBlueOutside, isRedInside, isRedOutside, isGreenInside,
-            isGreenOutside, isFocusInside, isFocusOutside, isBrightInside, isBrightOutside;
+            isGreenOutside, isBrightInside, isBrightOutside;
     private BufferedImage image;
-    public byte[] pixels;
+    public byte[] pixels, copyVector;
     public int[] rgbVector;
-
 
     public int getBlueSliderValueIn() {
         return blueSliderValueIn;
@@ -72,16 +71,8 @@ public class MyImage {
         return width;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
     public int getHeight() {
         return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 
     public int getInitialLocX() {
@@ -180,22 +171,6 @@ public class MyImage {
         isGreenOutside = greenOutside;
     }
 
-    public boolean isFocusInside() {
-        return isFocusInside;
-    }
-
-    public void setFocusInside(boolean focusInside) {
-        isFocusInside = focusInside;
-    }
-
-    public boolean isFocusOutside() {
-        return isFocusOutside;
-    }
-
-    public void setFocusOutside(boolean focusOutside) {
-        isFocusOutside = focusOutside;
-    }
-
     public boolean isBrightInside() {
         return isBrightInside;
     }
@@ -284,6 +259,10 @@ public class MyImage {
         this.rgbVector = new int[this.pixels.length];
         for (int i = 0; i < pixels.length; i++) {
             rgbVector[i] = Byte.toUnsignedInt(pixels[i]);
+        }
+        this.copyVector = new byte[this.pixels.length];
+        for (int i = 0; i < this.pixels.length; i++) {
+            this.copyVector[i] = this.pixels[i];
         }
     }
 
