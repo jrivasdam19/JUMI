@@ -7,8 +7,8 @@ public class Viewer extends Canvas implements Runnable {
     private boolean painting;
     private ArrayList<Ball> ballList;
     private ArrayList<BlackHole> blackHoleList;
-    private final int DELAY = 4;
-    private static final int WIDTH = 500;
+    private final int DELAY = 5;
+    private static final int WIDTH = 850;
     private static final int HEIGH = 500;
 
     public Viewer(ArrayList<BlackHole> blackHoleList, ArrayList<Ball> ballList) {
