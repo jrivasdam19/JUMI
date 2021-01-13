@@ -10,12 +10,12 @@ public class BallTask extends JFrame {
     private ArrayList<Ball> ballList = new ArrayList<>();
     private Stadistics stadistics;
     private static final int WIDTH = 1000;
-    private static final int HEIGH = 1000;
+    private static final int HEIGH = 700;
 
     public BallTask() {
         BlackHole.stadistics = this.stadistics;
         this.blackHoleList.add(new BlackHole(140, 140, 300, 120));
-        this.blackHoleList.add(new BlackHole(700, 80, 150, 300));
+        this.blackHoleList.add(new BlackHole(500, 80, 150, 300));
         this.viewer = new Viewer(this.blackHoleList, this.ballList);
         Ball.viewer = this.viewer;
         Ball.blackHoleList = this.blackHoleList;
@@ -41,7 +41,7 @@ public class BallTask extends JFrame {
         c.gridwidth=1;
         c.gridheight=1;
         c.fill=GridBagConstraints.NONE;
-        c.anchor=GridBagConstraints.NORTHWEST;
+        //c.anchor=GridBagConstraints.NORTHWEST;
         container.add(this.controlPanel, c);
     }
 
@@ -63,11 +63,13 @@ public class BallTask extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setBounds(50, 50, WIDTH, HEIGH);
-        this.setLayout(new GridBagLayout());
+        //this.setLayout(new GridBagLayout());
         Container container = this.getContentPane();
-        this.addViewerToFrame(container);
-        this.addControlPaneToFrame(container);
-        this.pack();
+        this.add(this.controlPanel,BorderLayout.SOUTH);
+        this.add(this.viewer,BorderLayout.CENTER);
+        //this.addViewerToFrame(container);
+        //this.addControlPaneToFrame(container);
+        //this.pack();
     }
 
     //------------------------------------------------------------------------------------------------------------------

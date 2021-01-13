@@ -18,6 +18,7 @@ public class ControlPanel extends JPanel implements ActionListener, Runnable {
         this.stadistics = stadistics;
         this.controlThread=new Thread(this);
         this.setLayout(new GridBagLayout());
+        this.setBackground(Color.orange);
         this.createPanel();
         this.controlThread.start();
     }

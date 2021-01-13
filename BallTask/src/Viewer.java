@@ -8,14 +8,13 @@ public class Viewer extends Canvas implements Runnable {
     private ArrayList<Ball> ballList;
     private ArrayList<BlackHole> blackHoleList;
     private final int DELAY = 4;
-    private static final int WIDTH = 950;
-    private static final int HEIGH = 950;
+    private static final int WIDTH = 500;
+    private static final int HEIGH = 500;
 
     public Viewer(ArrayList<BlackHole> blackHoleList, ArrayList<Ball> ballList) {
         Dimension dimension = new Dimension(WIDTH, HEIGH);
-        this.setPreferredSize(dimension);
+        this.setSize(dimension);
         this.setVisible(true);
-        this.setBackground(Color.green);
         this.ballList = ballList;
         this.blackHoleList = blackHoleList;
         this.viewerThread = new Thread(this);
