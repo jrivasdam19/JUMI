@@ -4,18 +4,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class ControlPanel extends JPanel implements ActionListener, Runnable {
+public class ControlPanel extends JPanel implements Runnable {
 
     private JButton addBall;
     private JTable statsTable;
     private ArrayList<Ball> ballList;
     private Stadistics stadistics;
+    private BallTask ballTask;
     private Thread controlThread;
     private final int DELAY=4;
 
-    public ControlPanel(ArrayList<Ball> ballList, Stadistics stadistics) {
+    public ControlPanel(ArrayList<Ball> ballList, Stadistics stadistics, BallTask ballTask) {
         this.ballList = ballList;
         this.stadistics = stadistics;
+        this.ballTask=ballTask;
         this.controlThread=new Thread(this);
         this.setLayout(new GridBagLayout());
         this.setBackground(Color.orange);
@@ -40,7 +42,7 @@ public class ControlPanel extends JPanel implements ActionListener, Runnable {
 
     private void createButtons() {
         this.addBall = new JButton("Add Ball");
-        this.addBall.addActionListener(this);
+        this.addBall.addActionListener(this.ballTask);
     }
 
     private void createPanel() {
@@ -65,7 +67,7 @@ public class ControlPanel extends JPanel implements ActionListener, Runnable {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    @Override
+    /*@Override
     public void actionPerformed(ActionEvent e) {
         String str = e.getActionCommand();
         switch (str) {
@@ -77,7 +79,7 @@ public class ControlPanel extends JPanel implements ActionListener, Runnable {
                 System.out.println("Not Handled ActionListener in " + e);
                 break;
         }
-    }
+    }*/
 
     @Override
     public void run() {
