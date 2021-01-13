@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class MyImage {
 
+    public MyImage Image1, Image2, Image3, Image4, originalImage, currentImage;
     private int blueSliderValueIn, blueSliderValueOut, greenSliderValueIn, greenSliderValueOut, redSliderValueIn,
             redSliderValueOut, sizeSliderValue, focusSliderValueIn, focusSliderValueOut, brightSliderValueIn,
             brightSliderValueOut, width, height, initialLocX, initialLocY, finalLocX, finalLocY;
@@ -14,6 +15,10 @@ public class MyImage {
     private BufferedImage image;
     public byte[] pixels, copyVector;
     public int[] rgbVector;
+    public static final int[][] UN_FOCUS_KERNEL = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+    public static final int[][] FOCUS_KERNEL = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+    public static int[][] currentKernel;
+    public static final String IMAGE_PATH = "C:\\Users\\Jose\\Desktop\\LOCAL JUMI\\ImageModifyInterface\\src\\grafics\\car.jpeg";
 
     public int getBlueSliderValueIn() {
         return blueSliderValueIn;
@@ -227,6 +232,9 @@ public class MyImage {
         this.brightSliderValueOut = brightSliderValueOut;
     }
 
+    public MyImage() {
+    }
+
     public MyImage(String path) {
         try {
             this.image = ImageIO.read(new File(path));
@@ -265,5 +273,368 @@ public class MyImage {
             this.copyVector[i] = this.pixels[i];
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    public void applyKernel(MyImage image, boolean square, boolean focus) {
+        int[] newVector = new int[image.pixels.length];
+        for (int i = 1; i < image.height - 1; i++) {
+            for (int j = 1; j < image.width - 1; j++) {
+                for (int k = 0; k < 3; k += 3) {
+                    if ((i > image.initialLocY & i < image.finalLocY) & (j > image.initialLocX & j < image.finalLocX)) {
+                        if (!square) {
+                            if (focus) {
+                                this.applyFocus(i, j, k, image, newVector);
+                            } else if (!focus) {
+                                this.applyUnFocus(i, j, image, newVector);
+                            }
+                        }
+                    } else {
+                        if (square) {
+                            if (focus) {
+                                this.applyFocus(i, j, k, image, newVector);
+                            } else if (!focus) {
+                                this.applyUnFocus(i, j, image, newVector);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void applyPreviousChangesInside(MyImage image) {
+        if (image.isGreyInside) {
+            this.selectModificableZone(image, false);
+        }
+        if (image.brightSliderValueIn != 0) {
+            ControlPanel.currentBrightSliderValue = image.brightSliderValueIn;
+            image.isBrightInside = true;
+            this.selectModificableZone(image, false);
+            image.isBrightInside = false;
+        }
+        if (image.redSliderValueIn != 0) {
+            ControlPanel.currentRedSliderValue = image.redSliderValueIn;
+            image.isRedInside = true;
+            this.selectModificableZone(image, false);
+            image.isRedInside = false;
+        }
+        if (image.greenSliderValueIn != 0) {
+            ControlPanel.currentGreenSliderValue = image.greenSliderValueIn;
+            image.isGreenInside = true;
+            this.selectModificableZone(image, false);
+            image.isGreenInside = false;
+        }
+        if (image.blueSliderValueIn != 0) {
+            ControlPanel.currentBlueSliderValue = image.blueSliderValueIn;
+            image.isBlueInside = true;
+            this.selectModificableZone(image, false);
+            image.isBlueInside = false;
+        }
+        if (image.focusSliderValueIn != 0) {
+            boolean focus;
+            int jSliderValue = image.focusSliderValueIn;
+            if (jSliderValue > 0) {
+                currentKernel = MyImage.FOCUS_KERNEL;
+                focus = true;
+                for (int i = 0; i < jSliderValue; i++) {
+                    this.applyKernel(image, false, focus);
+                }
+            } else if (jSliderValue < 0) {
+                currentKernel = MyImage.UN_FOCUS_KERNEL;
+                focus = false;
+                for (int i = 0; i < Math.abs(jSliderValue); i++) {
+                    this.applyKernel(image, false, focus);
+                }
+            }
+        }
+    }
+
+    public void applyPreviousChangesOutside(MyImage image) {
+        if (image.isGreyOutside) {
+            this.selectModificableZone(image, true);
+        }
+        if (image.brightSliderValueOut != 0) {
+            ControlPanel.currentBrightSliderValue = image.brightSliderValueOut;
+            image.isBrightOutside = true;
+            this.selectModificableZone(image, true);
+            image.isBrightOutside = false;
+        }
+        if (image.getRedSliderValueOut() != 0) {
+            ControlPanel.currentRedSliderValue = image.redSliderValueOut;
+            image.isRedOutside = true;
+            this.selectModificableZone(image, true);
+            image.isRedOutside = false;
+        }
+        if (image.getGreenSliderValueOut() != 0) {
+            ControlPanel.currentGreenSliderValue = image.greenSliderValueOut;
+            image.isGreenOutside = true;
+            this.selectModificableZone(image, true);
+            image.isGreenOutside = false;
+        }
+        if (image.blueSliderValueOut != 0) {
+            ControlPanel.currentBlueSliderValue = image.blueSliderValueOut;
+            image.isBlueOutside = true;
+            this.selectModificableZone(image, true);
+            image.isBlueOutside = false;
+        }
+        if (image.focusSliderValueOut != 0) {
+            boolean focus;
+            int jSliderValue = image.focusSliderValueOut;
+            if (jSliderValue > 0) {
+                currentKernel = MyImage.FOCUS_KERNEL;
+                focus = true;
+                for (int i = 0; i < jSliderValue; i++) {
+                    this.applyKernel(image, true, focus);
+                }
+            } else if (jSliderValue < 0) {
+                currentKernel = MyImage.UN_FOCUS_KERNEL;
+                focus = false;
+                for (int i = 0; i < Math.abs(jSliderValue); i++) {
+                    this.applyKernel(image, true, focus);
+                }
+            }
+        }
+    }
+
+    public String checkAlpha(BufferedImage image) {
+        String alpha;
+        if (image.isAlphaPremultiplied()) {
+            alpha = "Yes";
+        } else {
+            alpha = "No";
+        }
+        return alpha;
+    }
+
+    public void loadImages() {
+        this.Image1 = new MyImage(IMAGE_PATH);
+        this.Image2 = new MyImage(IMAGE_PATH);
+        this.Image3 = new MyImage(IMAGE_PATH);
+        this.Image4 = new MyImage(IMAGE_PATH);
+        this.originalImage = new MyImage(IMAGE_PATH);
+    }
+
+    public void resetImage(MyImage image) {
+        for (int i = 0; i < image.pixels.length; i++) {
+            image.pixels[i] = this.originalImage.pixels[i];
+        }
+    }
+
+    public void resetSliderValuesInside(MyImage image) {
+        image.brightSliderValueIn = 0;
+        image.redSliderValueIn = 0;
+        image.greenSliderValueIn = 0;
+        image.blueSliderValueIn = 0;
+        image.isGreyInside = false;
+        image.focusSliderValueIn = 0;
+    }
+
+    public void resetSliderValuesOutside(MyImage image) {
+        image.brightSliderValueOut = 0;
+        image.redSliderValueOut = 0;
+        image.greenSliderValueOut = 0;
+        image.blueSliderValueOut = 0;
+        image.isGreyOutside = false;
+        image.focusSliderValueOut = 0;
+    }
+
+    public void selectImage(MyImage image, boolean outside) {
+        /*this.setJTableData(this.dataFromImage, image);
+        if (outside) {
+            this.updateOutSliders(image);
+        } else {
+            this.updateInSliders(image);
+        }*/
+        this.currentImage = image;
+    }
+
+    public void selectModificableZone(MyImage image, boolean square) {
+        for (int i = 0; i < image.height; i++) {
+            for (int j = 0; j < image.width; j++) {
+                for (int k = 0; k < 3; k += 3) {
+                    if ((i > image.initialLocY & i < image.finalLocY) & (j > image.initialLocX & j < image.finalLocX)) {
+                        if (!square) {
+                            this.checkInsideProperties(image, i, j, k);
+                        }
+                    } else {
+                        if (square) {
+                            this.checkOutsideProperties(image, i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void setSquareSize(MyImage image, double percentage) {
+        int middlePointX = image.width / 2;
+        int middlePointY = image.height / 2;
+        int incrementY = (int) ((image.height * (percentage / 100)) / 2);
+        int incrementX = (int) ((image.width * (percentage / 100)) / 2);
+        image.initialLocY = middlePointY - incrementY;
+        image.finalLocY = middlePointY + incrementY;
+        image.initialLocX = middlePointX - incrementX;
+        image.finalLocX = middlePointX + incrementX;
+    }
+
+    public void updateImageDataInside(MyImage image) {
+        image.brightSliderValueIn = ControlPanel.currentBrightSliderValue;
+        image.redSliderValueIn = ControlPanel.currentRedSliderValue;
+        image.blueSliderValueIn = ControlPanel.currentBlueSliderValue;
+        image.greenSliderValueIn = ControlPanel.currentGreenSliderValue;
+        image.focusSliderValueIn = ControlPanel.currentFocusSliderValue;
+        image.sizeSliderValue = ControlPanel.currentSizeSliderValue;
+    }
+
+    public void updateImageDataOutside(MyImage image) {
+        image.brightSliderValueOut = ControlPanel.currentBrightSliderValue;
+        image.redSliderValueOut = ControlPanel.currentRedSliderValue;
+        image.blueSliderValueOut = ControlPanel.currentBlueSliderValue;
+        image.greenSliderValueOut = ControlPanel.currentGreenSliderValue;
+        image.focusSliderValueOut = ControlPanel.currentFocusSliderValue;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+
+    private void applyBlackAndWhite(MyImage image, int i, int j, int k) {
+        int a1, a2, a3;
+        a1 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k)]);
+        a2 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k + 1)]);
+        a3 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k + 2)]);
+        int rgb = (a1 + a2 + a3) / 3;
+        image.pixels[this.getVectorPosition(image, i, j, k)] = (byte) rgb;
+        image.pixels[this.getVectorPosition(image, i, j, k + 1)] = (byte) rgb;
+        image.pixels[this.getVectorPosition(image, i, j, k + 2)] = (byte) rgb;
+    }
+
+    private void applyBrightness(MyImage image, int i, int j, int k, int bright) {
+        int a1, a2, a3;
+        a1 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k)]) + bright;
+        a1 = check255(a1);
+        a2 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k + 1)]) + bright;
+        a2 = check255(a2);
+        a3 = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, k + 2)]) + bright;
+        a3 = check255(a3);
+        image.pixels[this.getVectorPosition(image, i, j, k)] = (byte) a1;
+        image.pixels[this.getVectorPosition(image, i, j, k + 1)] = (byte) a2;
+        image.pixels[this.getVectorPosition(image, i, j, k + 2)] = (byte) a3;
+    }
+
+    private void applyFocus(int i, int j, int k, MyImage image, int[] newVector) {
+        int finalVectorPos1 = this.getVectorPosition(image, i, j, k);
+        int finalVectorPos2 = this.getVectorPosition(image, i, j, k + 1);
+        int finalVectorPos3 = this.getVectorPosition(image, i, j, k + 2);
+        for (int l = 0; l < currentKernel.length; l++) {
+            for (int m = 0; m < currentKernel[l].length; m++) {
+                int originVectorPos1 = (3 * image.width * (i - 1 + l)) + (3 * (j - 1 + m)) + k;
+                int originVectorPos2 = (3 * image.width * (i - 1 + l)) + (3 * (j - 1 + m)) + k + 1;
+                int originVectorPos3 = (3 * image.width * (i - 1 + l)) + (3 * (j - 1 + m)) + k + 2;
+                newVector[finalVectorPos1] += Byte.toUnsignedInt(image.pixels[originVectorPos1]) * currentKernel[l][m];
+                newVector[finalVectorPos2] += Byte.toUnsignedInt(image.pixels[originVectorPos2]) * currentKernel[l][m];
+                newVector[finalVectorPos3] += Byte.toUnsignedInt(image.pixels[originVectorPos3]) * currentKernel[l][m];
+            }
+        }
+        newVector[finalVectorPos1] /= this.getNumberK(currentKernel);
+        newVector[finalVectorPos2] /= this.getNumberK(currentKernel);
+        newVector[finalVectorPos3] /= this.getNumberK(currentKernel);
+        if (newVector[finalVectorPos1] > 255 || newVector[finalVectorPos1] < 0 ||
+                newVector[finalVectorPos2] > 255 || newVector[finalVectorPos2] < 0 ||
+                newVector[finalVectorPos3] > 255 || newVector[finalVectorPos3] < 0) {
+            newVector[finalVectorPos1] = Byte.toUnsignedInt(image.copyVector[finalVectorPos1]);
+            newVector[finalVectorPos2] = Byte.toUnsignedInt(image.copyVector[finalVectorPos2]);
+            newVector[finalVectorPos3] = Byte.toUnsignedInt(image.copyVector[finalVectorPos3]);
+        }
+        image.pixels[finalVectorPos1] = (byte) newVector[finalVectorPos1];
+        image.pixels[finalVectorPos2] = (byte) newVector[finalVectorPos2];
+        image.pixels[finalVectorPos3] = (byte) newVector[finalVectorPos3];
+    }
+
+    private void applyRGBBrightness(MyImage image, int channel, int bright, int i, int j) {
+        int rgbChannel;
+        rgbChannel = Byte.toUnsignedInt(image.pixels[this.getVectorPosition(image, i, j, channel)]) + bright;
+        rgbChannel = this.check255(rgbChannel);
+        image.pixels[this.getVectorPosition(image, i, j, channel)] = (byte) rgbChannel;
+    }
+
+    private void applyUnFocus(int i, int j, MyImage image, int[] newVector) {
+        for (int k = 0; k < 3; k++) {
+            int finalVectorPos = this.getVectorPosition(image, i, j, k);
+            for (int l = 0; l < currentKernel.length; l++) {
+                for (int m = 0; m < currentKernel[l].length; m++) {
+                    int originVectorPos = (3 * image.width * (i - 1 + l)) + (3 * (j - 1 + m)) + k;
+                    newVector[finalVectorPos] += Byte.toUnsignedInt(image.pixels[originVectorPos]) * currentKernel[l][m];
+                }
+            }
+            newVector[finalVectorPos] /= this.getNumberK(currentKernel);
+            newVector[finalVectorPos] = this.check255(newVector[finalVectorPos]);
+            image.pixels[finalVectorPos] = (byte) newVector[finalVectorPos];
+        }
+    }
+
+    private int check255(int x) {
+        if (x > 255) {
+            x = 255;
+        } else if (x < 0) {
+            x = 0;
+        }
+        return x;
+    }
+
+    private void checkInsideProperties(MyImage image, int i, int j, int k) {
+        if (image.isGreyInside) {
+            this.applyBlackAndWhite(image, i, j, k);
+        }
+        if (image.isBlueInside) {
+            this.applyRGBBrightness(image, 0, ControlPanel.currentBlueSliderValue, i, j);
+        }
+        if (image.isGreenInside) {
+            this.applyRGBBrightness(image, 1, ControlPanel.currentGreenSliderValue, i, j);
+        }
+        if (image.isRedInside) {
+            this.applyRGBBrightness(image, 2, ControlPanel.currentRedSliderValue, i, j);
+        }
+        if (image.isBrightInside) {
+            this.applyBrightness(image, i, j, k, ControlPanel.currentBrightSliderValue);
+        }
+    }
+
+    private void checkOutsideProperties(MyImage image, int i, int j, int k) {
+        if (image.isGreyOutside) {
+            this.applyBlackAndWhite(image, i, j, k);
+        }
+        if (image.isBlueOutside) {
+            this.applyRGBBrightness(image, 0, ControlPanel.currentBlueSliderValue, i, j);
+        }
+        if (image.isGreenOutside) {
+            this.applyRGBBrightness(image, 1, ControlPanel.currentGreenSliderValue, i, j);
+        }
+        if (image.isRedOutside) {
+            this.applyRGBBrightness(image, 2, ControlPanel.currentRedSliderValue, i, j);
+        }
+        if (image.isBrightOutside) {
+            this.applyBrightness(image, i, j, k, ControlPanel.currentBrightSliderValue);
+        }
+    }
+
+    private int getNumberK(int[][] kernel) {
+        int numberK = 0;
+        for (int i = 0; i < kernel.length; i++) {
+            for (int j = 0; j < kernel[i].length; j++) {
+                numberK += kernel[i][j];
+            }
+        }
+        if (numberK == 0) {
+            numberK = 1;
+        }
+        return numberK;
+    }
+
+    private int getVectorPosition(MyImage image, int i, int j, int k) {
+        return (3 * image.width * i) + (3 * j) + k;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
 
 }

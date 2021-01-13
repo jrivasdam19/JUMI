@@ -4,12 +4,12 @@ import java.awt.*;
 public class InterfaceFrame extends JFrame {
     private Viewer viewer;
     private ControlPanel controlPanel;
-    private final int viewerWidth = 500;
-    private final int viewerHeight = 500;
+    private MyImage myImage;
 
     public InterfaceFrame(){
-        this.viewer=new Viewer(this.viewerWidth,this.viewerHeight);
-        this.controlPanel = new ControlPanel(this.viewer);
+        this.viewer=new Viewer();
+        this.myImage=new MyImage();
+        this.controlPanel = new ControlPanel(this.viewer,this.myImage);
 
         this.createFrame();
     }
