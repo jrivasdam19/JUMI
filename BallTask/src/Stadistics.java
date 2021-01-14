@@ -9,32 +9,16 @@ public class Stadistics {
         return totalBalls;
     }
 
-    public void setTotalBalls(int totalBalls) {
-        this.totalBalls = totalBalls;
-    }
-
     public int getBallsOutside() {
         return ballsOutside;
-    }
-
-    public void setBallsOutside(int ballsOutside) {
-        this.ballsOutside = ballsOutside;
     }
 
     public int getBallsInside() {
         return ballsInside;
     }
 
-    public void setBallsInside(int ballsInside) {
-        this.ballsInside = ballsInside;
-    }
-
     public int getBallsWaiting() {
         return ballsWaiting;
-    }
-
-    public void setBallsWaiting(int ballsWaiting) {
-        this.ballsWaiting = ballsWaiting;
     }
 
     public Stadistics() {

@@ -14,6 +14,7 @@ public class BallTask extends JFrame implements ActionListener {
     private Stadistics stadistics;
     private static final int WIDTH = 1000;
     private static final int HEIGH = 700;
+    public static final int DELAY = 2;
 
     public BallTask() {
         BlackHole.stadistics = this.stadistics;

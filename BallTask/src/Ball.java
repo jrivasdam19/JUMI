@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Ball implements VisibleObject, Runnable {
 
-    private Thread ballThread;
+    private final Thread BALL_THREAD;
     public static Viewer viewer;
     public static BallTask ballTask;
     public static ArrayList<BlackHole> blackHoleList;
@@ -14,53 +14,20 @@ public class Ball implements VisibleObject, Runnable {
     private double y = 0;
     private double dx = 1;
     private double dy = 1;
-    private final int DELAY = 2;
-    private Ellipse2D.Double ellipse2D;
+    private boolean ballRunning;
 
     public double getX() {
         return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
     }
 
     public double getY() {
         return y;
     }
 
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public double getDx() {
-        return dx;
-    }
-
-    public void setDx(double dx) {
-        this.dx = dx;
-    }
-
-    public double getDy() {
-        return dy;
-    }
-
-    public void setDy(double dy) {
-        this.dy = dy;
-    }
-
-    public int getSIZE_X() {
-        return SIZE_X;
-    }
-
-    public int getSIZE_Y() {
-        return SIZE_Y;
-    }
-
     public Ball() {
-        this.ellipse2D = this.getShape(this.x, this.y, this.SIZE_X, this.SIZE_Y);
-        this.ballThread = new Thread(this);
-        this.ballThread.start();
+        this.ballRunning=true;
+        this.BALL_THREAD = new Thread(this);
+        this.BALL_THREAD.start();
     }
 
 
@@ -94,7 +61,7 @@ public class Ball implements VisibleObject, Runnable {
     }
 
     public void stopBall() {
-        this.ballThread.interrupt();
+        this.BALL_THREAD.interrupt();
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -106,10 +73,10 @@ public class Ball implements VisibleObject, Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (this.ballRunning) {
             ballTask.manageBallMovement(this);
             try {
-                this.ballThread.sleep(this.DELAY);
+                this.BALL_THREAD.sleep(BallTask.DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

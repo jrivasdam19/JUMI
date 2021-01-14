@@ -7,7 +7,6 @@ public class Viewer extends Canvas implements Runnable {
     private boolean painting;
     private ArrayList<Ball> ballList;
     private ArrayList<BlackHole> blackHoleList;
-    private final int DELAY = 2;
     private static final int WIDTH = 850;
     private static final int HEIGH = 500;
 
@@ -42,7 +41,7 @@ public class Viewer extends Canvas implements Runnable {
             try {
                 //Este sleep lo ponemos porque sino no se vería la bola de lo rápido que se pinta. Por tanto, el sleep,
                 //tiene que ponerse tanto en este hilo como en el que se encarga del movimiento de la bola.
-                this.viewerThread.sleep(this.DELAY);
+                this.viewerThread.sleep(BallTask.DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
