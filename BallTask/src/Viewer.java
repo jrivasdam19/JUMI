@@ -7,7 +7,7 @@ public class Viewer extends Canvas implements Runnable {
     private boolean painting;
     private ArrayList<Ball> ballList;
     private ArrayList<BlackHole> blackHoleList;
-    private final int DELAY = 5;
+    private final int DELAY = 2;
     private static final int WIDTH = 850;
     private static final int HEIGH = 500;
 
@@ -24,12 +24,12 @@ public class Viewer extends Canvas implements Runnable {
 
     //------------------------------------------------------------------------------------------------------------------
 
-
     //------------------------------------------------------------------------------------------------------------------
 
     public void paint(Graphics g) {
-        for (Ball ball : this.ballList) ball.paint(g);
-        for (BlackHole blackHole : this.blackHoleList) blackHole.paint(g);
+        Graphics2D g2 = (Graphics2D) g;
+        for (Ball ball : this.ballList) ball.paint(g2);
+        for (BlackHole blackHole : this.blackHoleList) blackHole.paint(g2);
     }
 
     //------------------------------------------------------------------------------------------------------------------

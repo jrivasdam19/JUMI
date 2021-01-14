@@ -17,7 +17,7 @@ public class BallTask extends JFrame implements ActionListener {
 
     public BallTask() {
         BlackHole.stadistics = this.stadistics;
-        this.blackHoleList.add(new BlackHole(140, 140, 300, 120));
+        this.blackHoleList.add(new BlackHole(140, 190, 300, 120));
         this.blackHoleList.add(new BlackHole(700, 80, 150, 300));
         this.viewer = new Viewer(this.blackHoleList, this.ballList);
         Ball.viewer = this.viewer;
@@ -35,18 +35,11 @@ public class BallTask extends JFrame implements ActionListener {
         return this.stadistics;
     }
 
-    public String manageBallMovement(Ball ball) {
-        String whatToDo = "";
-        whatToDo = this.checkLimits(ball, this.viewer.getBounds());
-        //whatToDo = this.checkLimits(ball, this.blackHoleList.get(0).getRectangle2D().getBounds());
-        //whatToDo = this.checkLimits(ball, this.blackHoleList.get(1).getRectangle2D().getBounds());
-        return whatToDo;
-    }
-
-    public void manageBallMovementPrima(Ball ball) {
-        boolean collision = this.checkLimitsPrima(ball, this.viewer.getBounds());
+    public void manageBallMovement(Ball ball) {
+        boolean collision = this.checkLimits(ball, new Rectangle2D.Double(this.viewer.getBounds().getX(),
+                this.viewer.getBounds().getY(), this.viewer.getBounds().getWidth(), this.viewer.getBounds().getHeight()));
         for (BlackHole blackHole : this.blackHoleList)
-            collision = this.checkLimitsPrima(ball, blackHole.getRectangle2D());
+            collision = this.checkLimits(ball, blackHole.getRectangle2D());
         if (!collision) {
             ball.keepMoving();
         }
@@ -54,31 +47,32 @@ public class BallTask extends JFrame implements ActionListener {
 
     //------------------------------------------------------------------------------------------------------------------
 
-    private String checkLimits(Ball ball, Rectangle2D limits) {
-        String proceed = "";
-        if (ball.getX() < limits.getMinX()) {
-            ball.setX(limits.getMinX());
-            System.out.println("Margen izquierdo");
-            proceed = "bounceX";
-        } else if (ball.getX() + ball.getSIZE_X() >= limits.getMaxX()) {
-            ball.setX(limits.getMaxX() - ball.getSIZE_X());
-            System.out.println("Margen derecho");
-            proceed = "bounceX";
-        } else if (ball.getY() < limits.getMinY()) {
-            ball.setY(limits.getMinY());
-            System.out.println("Margen superior");
-            proceed = "bounceY";
-        } else if (ball.getY() + ball.getSIZE_Y() >= limits.getMaxY()) {
-            ball.setY(limits.getMaxY() - ball.getSIZE_Y());
-            System.out.println("Margen inferior");
-            proceed = "bounceY";
-        } else {
-            proceed = "continue";
-        }
-        return proceed;
+    private void addControlPaneToFrame(Container container) {
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.NONE;
+        //c.anchor=GridBagConstraints.NORTHWEST;
+        container.add(this.controlPanel, c);
     }
 
-    private boolean checkLimitsPrima(Ball ball, Rectangle2D limits) {
+    private void addViewerToFrame(Container container) {
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        c.fill = GridBagConstraints.BOTH;
+        container.add(this.viewer, c);
+    }
+
+    private boolean checkLimits(Ball ball, Rectangle2D.Double limits) {
         boolean collision = false;
         //borde izquierdo
         if (ball.getX() + 1 == limits.getMinX()) {
@@ -107,7 +101,9 @@ public class BallTask extends JFrame implements ActionListener {
                 ball.bounceVertically();
                 collision = true;
             }
-        } else if ((ball.getY() + 1 == limits.getMaxY() && ball.getX() + 1 == limits.getMaxX()) ||
+        }
+        //vértices
+        else if ((ball.getY() + 1 == limits.getMaxY() && ball.getX() + 1 == limits.getMaxX()) ||
                 (ball.getY() + 1 == limits.getMinY() && ball.getX() + 1 == limits.getMinX()) ||
                 (ball.getY() + 1 == limits.getMinY() && ball.getX() + 1 == limits.getMaxX()) ||
                 (ball.getY() + 1 == limits.getMaxY() && ball.getX() + 1 == limits.getMinX())) {
@@ -115,31 +111,6 @@ public class BallTask extends JFrame implements ActionListener {
             collision = true;
         }
         return collision;
-    }
-
-    private void addControlPaneToFrame(Container container) {
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.NONE;
-        //c.anchor=GridBagConstraints.NORTHWEST;
-        container.add(this.controlPanel, c);
-    }
-
-    private void addViewerToFrame(Container container) {
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.gridx = 1;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.BOTH;
-        container.add(this.viewer, c);
     }
 
     private void createFrame() {
@@ -155,6 +126,7 @@ public class BallTask extends JFrame implements ActionListener {
         //this.addControlPaneToFrame(container);
         //this.pack();
     }
+
 
     //------------------------------------------------------------------------------------------------------------------
 

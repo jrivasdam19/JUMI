@@ -26,7 +26,6 @@ public class ControlPanel extends JPanel implements Runnable {
     }
     //------------------------------------------------------------------------------------------------------------------
 
-
     //------------------------------------------------------------------------------------------------------------------
 
     private void addComponentsToPanel() {
@@ -67,19 +66,6 @@ public class ControlPanel extends JPanel implements Runnable {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    /*@Override
-    public void actionPerformed(ActionEvent e) {
-        String str = e.getActionCommand();
-        switch (str) {
-            case "Add Ball":
-                this.ballList.add(new Ball());
-                this.stadistics.addNewBall();
-                break;
-            default:
-                System.out.println("Not Handled ActionListener in " + e);
-                break;
-        }
-    }*/
 
     @Override
     public void run() {

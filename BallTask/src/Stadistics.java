@@ -43,19 +43,21 @@ public class Stadistics {
         this.ballsWaiting = 0;
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+
     public void addNewBall(){
         this.ballsOutside++;
         this.calculateTotal();
     }
 
-    public void calculateBallsOutside() {
-        this.ballsInside--;
-        this.ballsOutside++;
-    }
-
     public void calculateBallsInside() {
         this.ballsWaiting--;
         this.ballsInside++;
+    }
+
+    public void calculateBallsOutside() {
+        this.ballsInside--;
+        this.ballsOutside++;
     }
 
     public void calculateBallsWaiting() {
