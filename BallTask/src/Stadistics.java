@@ -34,17 +34,21 @@ public class Stadistics {
         this.calculateTotal();
     }
 
-    public void calculateBallsInside() {
-        this.ballsWaiting--;
-        this.ballsInside++;
-    }
-
-    public void calculateBallsOutside() {
+    public void addNewBallFromInside() {
         this.ballsInside--;
         this.ballsOutside++;
     }
 
-    public void calculateBallsWaiting() {
+    public void addNewBallFromOutside() {
+        this.ballsOutside--;
+        this.ballsInside++;
+    }
+
+    public void addNewBallFromWaiting() {
+        this.ballsWaiting--;
+        this.ballsInside++;
+    }
+    public void addNewBallWaiting(){
         this.ballsOutside--;
         this.ballsWaiting++;
     }

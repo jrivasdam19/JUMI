@@ -10,11 +10,24 @@ public class Ball implements VisibleObject, Runnable {
     public static ArrayList<BlackHole> blackHoleList;
     private final int SIZE_X = 15;
     private final int SIZE_Y = 15;
-    private double x = 0;
-    private double y = 0;
+    private Color color = Color.BLACK;
+    private double x = 5;
+    private double y = 5;
     private double dx = 1;
     private double dy = 1;
-    private boolean ballRunning;
+    private boolean insideBlackHole;
+
+    public Color getColor() {
+        return color;
+    }
+
+    public boolean isInsideBlackHole() {
+        return insideBlackHole;
+    }
+
+    public void setInsideBlackHole(boolean insideBlackHole) {
+        this.insideBlackHole = insideBlackHole;
+    }
 
     public double getX() {
         return x;
@@ -24,8 +37,12 @@ public class Ball implements VisibleObject, Runnable {
         return y;
     }
 
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     public Ball() {
-        this.ballRunning=true;
+        this.insideBlackHole = false;
         this.BALL_THREAD = new Thread(this);
         this.BALL_THREAD.start();
     }
@@ -60,21 +77,19 @@ public class Ball implements VisibleObject, Runnable {
         this.y += this.dy;
     }
 
-    public void stopBall() {
-        this.BALL_THREAD.interrupt();
-    }
-
     //------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void paint(Graphics2D g) {
-        g.draw(this.getShape(this.x, this.y, this.SIZE_X, this.SIZE_Y));
+        g.setColor(this.color);
+        g.fill(this.getShape(this.x, this.y, this.SIZE_X, this.SIZE_Y));
+        g.setColor(Color.BLACK);
     }
 
     @Override
     public void run() {
-        while (this.ballRunning) {
-            ballTask.manageBallMovement(this);
+        while (true) {
+            ballTask.defineIntersect(this);
             try {
                 this.BALL_THREAD.sleep(BallTask.DELAY);
             } catch (InterruptedException e) {

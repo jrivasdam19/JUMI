@@ -34,7 +34,6 @@ public class ControlPanel extends JPanel implements Runnable {
 
         c.gridy = 1;
         this.add(this.addBall, c);
-
     }
 
     private void createButtons() {

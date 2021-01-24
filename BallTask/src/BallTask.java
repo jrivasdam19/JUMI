@@ -14,7 +14,7 @@ public class BallTask extends JFrame implements ActionListener {
     private Stadistics stadistics;
     private static final int WIDTH = 1000;
     private static final int HEIGH = 700;
-    public static final int DELAY = 2;
+    public static final int DELAY = 6;
 
     public BallTask() {
         BlackHole.stadistics = this.stadistics;
@@ -32,15 +32,22 @@ public class BallTask extends JFrame implements ActionListener {
 
     //------------------------------------------------------------------------------------------------------------------
 
-    public Stadistics getStadistics() {
-        return this.stadistics;
-    }
-
-    public void manageBallMovement(Ball ball) {
-        boolean collision = this.checkLimits(ball, new Rectangle2D.Double(this.viewer.getBounds().getX(),
-                this.viewer.getBounds().getY(), this.viewer.getBounds().getWidth(), this.viewer.getBounds().getHeight()));
-        for (BlackHole blackHole : this.blackHoleList)
-            collision = this.checkLimits(ball, blackHole.getRectangle2D());
+    public void defineIntersect(Ball ball) {
+        boolean collision = false;
+        String str = "";
+        str = this.checkLimits(ball, this.viewer.getBounds());
+        if (!str.equals("")) {
+            this.defineBounce(ball, str);
+            collision = true;
+        } else {
+            for (BlackHole blackHole : this.blackHoleList) {
+                str = this.checkLimits(ball, blackHole.getRectangle2D().getBounds());
+                if (!str.equals("")) {
+                    collision = true;
+                    this.manageIntersectWithBall(ball, blackHole);
+                }
+            }
+        }
         if (!collision) {
             ball.keepMoving();
         }
@@ -73,34 +80,30 @@ public class BallTask extends JFrame implements ActionListener {
         container.add(this.viewer, c);
     }
 
-    private boolean checkLimits(Ball ball, Rectangle2D.Double limits) {
-        boolean collision = false;
+    private String checkLimits(Ball ball, Rectangle limits) {
+        String str = "";
         //borde izquierdo
         if (ball.getX() + 1 == limits.getMinX()) {
             if (ball.getY() + 1 > limits.getMinY() && ball.getY() + 1 < limits.getMaxY()) {
-                ball.bounceHorizontally();
-                collision = true;
+                str = "H";
             }
         }
         //borde derecho
         else if (ball.getX() + 1 == limits.getMaxX()) {
             if (ball.getY() + 1 > limits.getMinY() && ball.getY() + 1 < limits.getMaxY()) {
-                ball.bounceHorizontally();
-                collision = true;
+                str = "H";
             }
         }
         //borde superior
         else if (ball.getY() + 1 == limits.getMinY()) {
             if (ball.getX() + 1 > limits.getMinX() && ball.getX() + 1 < limits.getMaxX()) {
-                ball.bounceVertically();
-                collision = true;
+                str = "V";
             }
         }
         //borde inferior
         else if (ball.getY() + 1 == limits.getMaxY()) {
             if (ball.getX() + 1 > limits.getMinX() && ball.getX() + 1 < limits.getMaxX()) {
-                ball.bounceVertically();
-                collision = true;
+                str = "V";
             }
         }
         //vértices
@@ -108,14 +111,12 @@ public class BallTask extends JFrame implements ActionListener {
                 (ball.getY() + 1 == limits.getMinY() && ball.getX() + 1 == limits.getMinX()) ||
                 (ball.getY() + 1 == limits.getMinY() && ball.getX() + 1 == limits.getMaxX()) ||
                 (ball.getY() + 1 == limits.getMaxY() && ball.getX() + 1 == limits.getMinX())) {
-            ball.bounceDiagonally();
-            collision = true;
+            str = "D";
         }
-        return collision;
+        return str;
     }
 
     private void createFrame() {
-
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setBounds(50, 50, WIDTH, HEIGH);
@@ -128,6 +129,51 @@ public class BallTask extends JFrame implements ActionListener {
         //this.pack();
     }
 
+    private void defineBounce(Ball ball, String str) {
+        switch (str) {
+            case "H":
+                ball.bounceHorizontally();
+                break;
+            case "V":
+                ball.bounceVertically();
+                break;
+            case "D":
+                ball.bounceDiagonally();
+                break;
+        }
+    }
+
+    private synchronized void manageIntersectWithBall(Ball ball, BlackHole blackHole) {
+        if (blackHole.isFull() && !ball.isInsideBlackHole()) {
+            if(ball.getColor()!=Color.RED){
+                stadistics.addNewBallWaiting();
+            }
+            ball.setColor(Color.RED);
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else if (blackHole.isFull() && ball.isInsideBlackHole()) {
+            ball.setColor(Color.BLACK);
+            ball.setInsideBlackHole(false);
+            blackHole.setFull(false);
+            ball.keepMoving();
+            stadistics.addNewBallFromInside();
+            notifyAll();
+
+        } else if (!blackHole.isFull() && !ball.isInsideBlackHole()) {
+            if(ball.getColor()==Color.RED){
+                stadistics.addNewBallFromWaiting();
+            }else{
+                stadistics.addNewBallFromOutside();
+            }
+            blackHole.setFull(true);
+            ball.setInsideBlackHole(true);
+            ball.setColor(Color.GREEN);
+            ball.keepMoving();
+        }
+    }
 
     //------------------------------------------------------------------------------------------------------------------
 
