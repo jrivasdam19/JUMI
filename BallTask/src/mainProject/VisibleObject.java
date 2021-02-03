@@ -1,3 +1,5 @@
+package mainProject;
+
 import java.awt.*;
 
 public interface VisibleObject {

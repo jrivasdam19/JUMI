@@ -1,3 +1,5 @@
+package mainProject;
+
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ public class Ball implements VisibleObject, Runnable {
     private final int SIZE_X = 15;
     private final int SIZE_Y = 15;
     private Color color = Color.BLACK;
+    public static boolean liveBall;
     private double x = 5;
     private double y = 5;
     private double dx = 1;
@@ -39,6 +42,10 @@ public class Ball implements VisibleObject, Runnable {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public Thread getBALL_THREAD() {
+        return BALL_THREAD;
     }
 
     public Ball() {
@@ -88,11 +95,12 @@ public class Ball implements VisibleObject, Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (liveBall) {
             ballTask.defineIntersect(this);
             try {
                 this.BALL_THREAD.sleep(BallTask.DELAY);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 e.printStackTrace();
             }
         }

@@ -1,3 +1,5 @@
+package mainProject;
+
 public class Stadistics {
 
     private int totalBalls;
@@ -51,6 +53,13 @@ public class Stadistics {
     public void addNewBallWaiting(){
         this.ballsOutside--;
         this.ballsWaiting++;
+    }
+
+    public void eraseBalls(){
+        this.ballsInside = 0;
+        this.ballsOutside = 0;
+        this.ballsWaiting = 0;
+        this.calculateTotal();
     }
 
     private void calculateTotal() {

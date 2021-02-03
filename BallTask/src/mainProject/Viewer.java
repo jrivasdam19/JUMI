@@ -1,3 +1,6 @@
+package mainProject;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -8,16 +11,19 @@ public class Viewer extends Canvas implements Runnable {
     private boolean painting;
     private ArrayList<Ball> ballList;
     private ArrayList<BlackHole> blackHoleList;
-    private static final int WIDTH = 850;
-    private static final int HEIGH = 500;
-    private Rectangle2D.Double rectangle;
+    private static final int VIEWER_WIDTH = 700;
+    private static final int VIEWER_HEIGH = 700;
+    private Rectangle rectangle;
+
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
 
     public Viewer(ArrayList<BlackHole> blackHoleList, ArrayList<Ball> ballList) {
-        Dimension dimension = new Dimension(WIDTH, HEIGH);
-        this.setSize(dimension);
+        Dimension dimension = new Dimension(VIEWER_WIDTH, VIEWER_HEIGH);
+        this.setPreferredSize(dimension);
         this.setVisible(true);
-        this.rectangle = new Rectangle2D.Double(this.getBounds().getX(), this.getBounds().getY(),
-                this.getBounds().getWidth(), this.getBounds().getHeight());
+        this.rectangle = new Rectangle(0,0,VIEWER_WIDTH,VIEWER_HEIGH);
         this.ballList = ballList;
         this.blackHoleList = blackHoleList;
         this.viewerThread = new Thread(this);
@@ -38,7 +44,7 @@ public class Viewer extends Canvas implements Runnable {
     @Override
     public void run() {
         while (this.painting) {
-            //Esto hace que se vuelva a pintar el fondo del Viewer.
+            //Esto hace que se vuelva a pintar el fondo del mainProject.Viewer.
             this.repaint();
             try {
                 //Este sleep lo ponemos porque sino no se vería la bola de lo rápido que se pinta. Por tanto, el sleep,
