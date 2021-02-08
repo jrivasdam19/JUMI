@@ -9,6 +9,7 @@ public class ControlPanel extends JPanel implements Runnable {
     private JButton addBall, newGame, resume, stop;
     private JLabel neighborIp;
     private JTextField port;
+    private boolean openedLeftEdge, openedRightEdge;
     private JCheckBox leftSide, rightSide;
     private JTable statsTable;
     private ArrayList<Ball> ballList;
@@ -22,13 +23,29 @@ public class ControlPanel extends JPanel implements Runnable {
     private Thread controlThread;
     private final int DELAY = 4;
 
+    public boolean isOpenedLeftEdge() {
+        return openedLeftEdge;
+    }
 
+    public void setOpenedLeftEdge(boolean openedLeftEdge) {
+        this.openedLeftEdge = openedLeftEdge;
+    }
+
+    public boolean isOpenedRightEdge() {
+        return openedRightEdge;
+    }
+
+    public void setOpenedRightEdge(boolean openedRightEdge) {
+        this.openedRightEdge = openedRightEdge;
+    }
 
     public JTextField getPort() {
         return port;
     }
 
     public ControlPanel(ArrayList<Ball> ballList, Stadistics stadistics, BallTask ballTask) {
+        this.openedLeftEdge = false;
+        this.openedRightEdge = false;
         this.ballList = ballList;
         this.stadistics = stadistics;
         this.ballTask = ballTask;
@@ -47,7 +64,7 @@ public class ControlPanel extends JPanel implements Runnable {
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 7;
-        c.gridheight=2;
+        c.gridheight = 2;
         c.fill = GridBagConstraints.BOTH;
         c.insets = new Insets(10, 5, 10, 5);
         this.add(this.statsTable, c);
@@ -55,7 +72,7 @@ public class ControlPanel extends JPanel implements Runnable {
         c.gridx = 7;
         c.gridy = 0;
         c.gridwidth = 3;
-        c.gridheight=1;
+        c.gridheight = 1;
         this.add(this.addBall, c);
 
         c.gridy = 1;
@@ -70,24 +87,24 @@ public class ControlPanel extends JPanel implements Runnable {
 
         c.gridx = 13;
         c.gridy = 0;
-        c.gridwidth=6;
+        c.gridwidth = 6;
         c.fill = GridBagConstraints.HORIZONTAL;
         this.add(this.neighborIp, c);
 
-        c.gridy=1;
+        c.gridy = 1;
         this.add(this.port, c);
 
         c.gridx = 19;
         c.gridy = 0;
-        c.gridwidth=2;
-        this.add(this.leftSide,c);
+        c.gridwidth = 2;
+        this.add(this.leftSide, c);
 
         c.gridy = 1;
-        this.add(this.rightSide,c);
+        this.add(this.rightSide, c);
     }
 
     private void createButtons() {
-        this.addBall = new JButton("Add Ball");
+        this.addBall = new JButton("Add New Ball");
         this.addBall.addActionListener(this.ballTask);
         this.newGame = new JButton("New Game");
         this.newGame.addActionListener(this.ballTask);
@@ -112,15 +129,19 @@ public class ControlPanel extends JPanel implements Runnable {
     public void changeBoxState(String str) {
         switch (str) {
             case "Right side":
+                this.openedRightEdge = true;
+                this.openedLeftEdge = false;
                 this.leftSide.setSelected(false);
                 break;
             case "Left side":
+                this.openedLeftEdge = true;
+                this.openedRightEdge = false;
                 this.rightSide.setSelected(false);
         }
     }
 
-    public void enableButton(String str){
-        switch (str){
+    public void enableButton(String str) {
+        switch (str) {
             case "Resume":
                 this.resume.setEnabled(false);
                 this.stop.setEnabled(true);

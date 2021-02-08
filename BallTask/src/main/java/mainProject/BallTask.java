@@ -1,6 +1,9 @@
 package mainProject;
 
+import Communication.Channel;
+import Communication.Client;
 import Communication.Server;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +17,8 @@ public class BallTask extends JFrame implements ActionListener {
     private ControlPanel controlPanel;
     private Stadistics stadistics;
     private Server server;
+    private Client client;
+    private Channel channel;
     private ArrayList<BlackHole> blackHoleList = new ArrayList<>();
     private ArrayList<Ball> ballList = new ArrayList<>();
 
@@ -22,29 +27,44 @@ public class BallTask extends JFrame implements ActionListener {
     public static final int DELAY = 6;
 
     public BallTask() {
-        BlackHole.stadistics = this.stadistics;
         this.blackHoleList.add(new BlackHole(140, 200, 300, 120));
         this.blackHoleList.add(new BlackHole(700, 80, 150, 300));
         this.viewer = new Viewer(this.blackHoleList, this.ballList);
-        Ball.viewer = this.viewer;
         Ball.ballTask = this;
-        Ball.liveBall = true;
-        Ball.blackHoleList = this.blackHoleList;
-        BlackHole.viewer = this.viewer;
         this.stadistics = new Stadistics();
         this.controlPanel = new ControlPanel(this.ballList, this.stadistics, this);
-        this.server=new Server(this.controlPanel);
+        this.channel = new Channel(this);
+        this.server = new Server(this.channel);
+        this.client = new Client(this.channel);
         this.createFrame();
         this.setResizable(true);
     }
 
     //------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Defines whether ball intersects with Viewer or BlackHoles limits.
+     *
+     * @param ball
+     */
     public void defineIntersect(Ball ball) {
         boolean collision = false;
         String str = "";
         str = this.checkLimits(ball, this.viewer.getBounds());
-        if (!str.equals("")) {
+        if (!StringUtils.equals(str, "")) {
+            if (this.controlPanel.isOpenedLeftEdge()) {
+                if (StringUtils.equals(str, "Left")) {
+                    ball.setExitWall(str);
+                    System.out.println("enviando la bola por la izquierda");
+                    this.manageBallExit(ball);
+                }
+            } else if (this.controlPanel.isOpenedRightEdge()) {
+                if (StringUtils.equals(str, "Right")) {
+                    ball.setExitWall(str);
+                    System.out.println("enviando la bola por la derecha");
+                    this.manageBallExit(ball);
+                }
+            }
             this.defineBounce(ball, str);
             collision = true;
         } else {
@@ -52,7 +72,7 @@ public class BallTask extends JFrame implements ActionListener {
                 str = this.checkLimits(ball, blackHole.getRectangle2D().getBounds());
                 if (!str.equals("")) {
                     collision = true;
-                    this.manageIntersectWithBall(ball, blackHole);
+                    this.manageBlackHoleIntersect(ball, blackHole);
                 }
             }
         }
@@ -61,8 +81,68 @@ public class BallTask extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Creates, starts and adds a new threaded Ball instance into ballList ArrayList. It will display so into Stadistics.
+     *
+     * @param ball
+     */
+    public void generateNewBall(Ball ball) {
+        this.ballList.add(ball);
+        this.stadistics.addNewBall();
+        ball.startBall();
+    }
+
+    /**
+     * Generates a new Ball instance according to the exit wall.
+     *
+     * @param informationTaken String argument that contains ball features.
+     * @return New Ball instance with preset features.
+     */
+    public Ball manageBallEntry(String informationTaken) {
+        double x = Double.parseDouble(informationTaken.split(",")[1]);
+        double y = Double.parseDouble(informationTaken.split(",")[2]);
+        double dx = Double.parseDouble(informationTaken.split(",")[3]);
+        double dy = Double.parseDouble(informationTaken.split(",")[4]);
+        switch (informationTaken.split(",")[5]) {
+            case "Right":
+                x = 0;
+                break;
+            case "Left":
+                x = this.viewer.getBounds().getMaxX();
+                break;
+        }
+        return Ball.createReceivedBall(x, y, dx, dy);
+    }
+
     //------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Passes ball instance to Channel class in order to be sent out. Also remove this instance from ballList and let
+     * Thread execution finish.
+     *
+     * @param ball
+     */
+    private void manageBallExit(Ball ball) {
+        this.channel.sendBallFeatures(ball);
+        this.stadistics.eraseBall();
+        ball.setLiveBall(false);
+        this.ballList.remove(ball);
+    }
+
+    /**
+     * Let all Threads execution finish.
+     */
+    private void killThreads() {
+        for (Ball ball : this.ballList) {
+            ball.setLiveBall(false);
+        }
+    }
+
+    /**
+     * Defines gridBagLayout constraints for ControlPanel to be added to Frame.
+     *
+     * @param container
+     */
     private void addControlPaneToFrame(Container container) {
         GridBagConstraints c = new GridBagConstraints();
 
@@ -77,6 +157,11 @@ public class BallTask extends JFrame implements ActionListener {
         container.add(this.controlPanel, c);
     }
 
+    /**
+     * Defines gridBagLayout constraints for Viewer to be added to Frame.
+     *
+     * @param container
+     */
     private void addViewerToFrame(Container container) {
         GridBagConstraints c = new GridBagConstraints();
 
@@ -91,18 +176,25 @@ public class BallTask extends JFrame implements ActionListener {
         container.add(this.viewer, c);
     }
 
+    /**
+     * Checks in which of rectangle limits intersect happens.
+     *
+     * @param ball
+     * @param limits Square shape object bounds.
+     * @return String with the intersect.
+     */
     private String checkLimits(Ball ball, Rectangle limits) {
         String str = "";
         //borde izquierdo
         if (ball.getX() + 1 == limits.getMinX()) {
             if (ball.getY() + 1 > limits.getMinY() && ball.getY() + 1 < limits.getMaxY()) {
-                str = "H";
+                str = "Left";
             }
         }
         //borde derecho
         else if (ball.getX() + 1 == limits.getMaxX()) {
             if (ball.getY() + 1 > limits.getMinY() && ball.getY() + 1 < limits.getMaxY()) {
-                str = "H";
+                str = "Right";
             }
         }
         //borde superior
@@ -127,6 +219,9 @@ public class BallTask extends JFrame implements ActionListener {
         return str;
     }
 
+    /**
+     * Manages the creation of BallTask Frame
+     */
     private void createFrame() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //this.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -136,15 +231,23 @@ public class BallTask extends JFrame implements ActionListener {
         //Container container = this.getContentPane();
         this.add(this.controlPanel, BorderLayout.SOUTH);
         this.add(this.viewer, BorderLayout.CENTER);
-        //this.addControlPaneToFrame(container);
-        //this.addViewerToFrame(container);
-
-        //this.pack();
+        /*this.addControlPaneToFrame(container);
+        this.addViewerToFrame(container);
+        this.pack();*/
     }
 
+    /**
+     * Defines with type of bounce ball should do.
+     *
+     * @param ball
+     * @param str  String with the intersect.
+     */
     private void defineBounce(Ball ball, String str) {
         switch (str) {
-            case "H":
+            case "Left":
+                ball.bounceHorizontally();
+                break;
+            case "Right":
                 ball.bounceHorizontally();
                 break;
             case "V":
@@ -156,7 +259,13 @@ public class BallTask extends JFrame implements ActionListener {
         }
     }
 
-    private synchronized void manageIntersectWithBall(Ball ball, BlackHole blackHole) {
+    /**
+     * Manages ball intersect with BlackHole object.
+     *
+     * @param ball
+     * @param blackHole
+     */
+    private synchronized void manageBlackHoleIntersect(Ball ball, BlackHole blackHole) {
         if (blackHole.isFull() && !ball.isInsideBlackHole()) {
             if (ball.getColor() != Color.RED) {
                 stadistics.addNewBallWaiting();
@@ -188,7 +297,10 @@ public class BallTask extends JFrame implements ActionListener {
         }
     }
 
-    private void releaseBlackHoles() {
+    /**
+     * Set full BlackHoles attribute to false.
+     */
+    private void clearOutBlackHoles() {
         for (BlackHole blackHole : this.blackHoleList) {
             blackHole.setFull(false);
         }
@@ -200,9 +312,9 @@ public class BallTask extends JFrame implements ActionListener {
         }
     }
 
-    private synchronized void stopThreads(){
+    private synchronized void stopThreads() {
         for (Ball ball : this.ballList) {
-            if(!ball.getBALL_THREAD().isInterrupted()){
+            if (!ball.getBALL_THREAD().isInterrupted()) {
                 try {
                     ball.getBALL_THREAD().wait();
                 } catch (InterruptedException interruptedException) {
@@ -226,17 +338,15 @@ public class BallTask extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String str = e.getActionCommand();
         switch (str) {
-            case "Add Ball":
-                Ball.liveBall = true;
-                this.ballList.add(new Ball());
-                this.stadistics.addNewBall();
+            case "Add New Ball":
+                this.generateNewBall(new Ball());
                 break;
             case "New Game":
                 this.interruptThreads();
                 this.ballList.clear();
-                Ball.liveBall = false;
+                this.killThreads();
                 this.stadistics.eraseBalls();
-                this.releaseBlackHoles();
+                this.clearOutBlackHoles();
                 break;
             case "Resume":
                 this.controlPanel.enableButton(str);
